@@ -6,10 +6,12 @@
 
 X_DIM = 0;
 Y_DIM = 1;
+Z_DIM = 2;
 
 BOUNDARY_MIRROR = 0;
 BOUNDARY_OPPOSE_X = 1;
 BOUNDARY_OPPOSE_Y = 2;
+
 
 /* The Simulator object provides an API for running the simulation using
  * the resources made available by the Grid data structure.
@@ -100,13 +102,49 @@ function Simulator(N, width, height, visc, diff, timeStep) {
         }
     }
 
-    // Updates and fixes the boundary cells.
+    // Sets the values of X on the boundary cells (inactive in the actual
+    // simulation visualization) to the appropriate values based on mode.
+    // mode:
+    //  BOUNDARY_MIRROR   => all border values will be copied from the
+    //      closest inner neighboring cell.
+    //  BOUNDARY_OPPOSE_X => the left and right edges will have inverse
+    //      values of the closest inner neighors.
+    //  BOUNDARY_OPPOSE_Y => the top and bottom edges will have inverse
+    //      values of the closest inner neighbors.
     this.setBoundary = function(X, mode = BOUNDARY_MIRROR) {
-        for(var i=1; i<=(X.length-2); i++) {
+        // index 1 and "last" are the endpoints of the active grid
+        var lastX = this.grid.nX;
+        var lastY = this.grid.nY;
+        // index 0 and "edge" are the border cells we're updating
+        var edgeX = lastX + 1;
+        var edgeY = lastY + 1;
+        // update left and right edges
+        for(var j=1; j<=lastY; j++) {
             if(mode == BOUNDARY_OPPOSE_X) {
-                // TODO
+                X[0][j] = -X[1][j];
+                X[edgeX][j] = -X[lastX][j];
+            }
+            else {
+                X[0][j] = X[1][j];
+                X[edgeX][j] = X[lastX][j];
             }
         }
+        // update top and bottom edges
+        for(var i=1; i<=lastX; i++) {
+            if(mode == BOUNDARY_OPPOSE_Y) {
+                X[i][0] = -X[i][1];
+                X[i][edgeY] = -X[i][lastY];
+            }
+            else {
+                X[i][0] = X[i][1];
+                X[i][edgeY] = X[i][lastY];
+            }
+        }
+        // update corners to be averages of their nearest edge neighbors
+        X[0][0]         = 0.5*(X[1][0] + X[0][1]);
+        X[0][edgeY]     = 0.5*(X[1][edgeY] + X[0][lastY]);
+        X[edgeX][0]     = 0.5*(X[lastX][0] + X[edgeX][1]);
+        X[edgeX][edgeY] = 0.5*(X[lastX][edgeY] + X[edgeX][lastY]);
     }
 
     // Does one velocity field update.
