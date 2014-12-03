@@ -42,7 +42,8 @@ function Simulator(N, width, height, visc, diff, timeStep) {
     // Sets the values of vector X to the "diffused" values from X0.
     // That is, the values of X "leak in" to and "leak out" of all
     // neighboring cells.
-    this.diffuse = function(X, X0) {
+    // bMode is the boundary mode for setBoundary().
+    this.diffuse = function(X, X0, bMode) {
         var a = this.timeStep * this.diff * this.grid.nX * this.grid.nY;
         for(var k=0; k<20; k++) {
             for(var i=1; i<=this.grid.nX; i++) {
@@ -53,12 +54,13 @@ function Simulator(N, width, height, visc, diff, timeStep) {
                 }
             }
         }
-        // TODO - boundary
+        this.setBoundary(X, bMode);
     }
 
     // Sets the fields in D to be the values of D0 flowing in the direction
     // given by velocity V (a multi-dimensional velocity field).
-    this.advect = function(D, D0, V) {
+    // bMode is the boundary mode for setBoundary().
+    this.advect = function(D, D0, V, bMode) {
         var dX = this.grid.nX * this.timeStep;
         var dY = this.grid.nY * this.timeStep;
         for(var i=1; i<=this.grid.nX; i++) {
@@ -88,7 +90,7 @@ function Simulator(N, width, height, visc, diff, timeStep) {
                         + s1*(t0*D0[i1][j0] + t1*D0[i1][j1]);
             }
         }
-        // TODO - boundary
+        this.setBoundary(D, bMode);
     }
 
     this.project = function(U, P, DIV) {
@@ -156,9 +158,11 @@ function Simulator(N, width, height, visc, diff, timeStep) {
     this.dStep = function() {
         this.addSource(this.grid.densities, this.grid.prev_densities);
         this.grid.swapD();
-        this.diffuse(this.grid.densities, this.grid.prev_densities, this.diff);
+        this.diffuse(this.grid.densities, this.grid.prev_densities,
+                     BOUNDARY_MIRROR);
         this.grid.swapD();
-        this.advect(this.grid.densities, this.grid.prev_densities, this.grid.velocities);
+        this.advect(this.grid.densities, this.grid.prev_densities,
+                    this.grid.velocities, BOUNDARY_MIRROR);
         
     }
 

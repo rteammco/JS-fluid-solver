@@ -52,7 +52,7 @@ $(document).ready(function() {
 
     // set up the simulation TODO diff and visc params
     var dT = 30 / 1000; // visc, diff
-    sim = new Simulator(10, canvas.width, canvas.height, 0.5, 0.1, dT);
+    sim = new Simulator(10, canvas.width, canvas.height, 0.5, 0.5, dT);
 
     // set up user interaction
     canvas.onmousedown = function(event) {
