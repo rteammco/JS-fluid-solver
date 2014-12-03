@@ -93,15 +93,43 @@ function Simulator(N, width, height, visc, diff, timeStep) {
         this.setBoundary(D, bMode);
     }
 
-    this.project = function(U, P, DIV) {
+    // Project step forces velocities to be mass-conserving.
+    this.project = function(U, U_prev) { // u v p div
         var Lx = 1.0 / this.grid.nX;
         var Ly = 1.0 / this.grid.nY;
         
         for(var i=1; i<=this.grid.nX; i++) {
             for(var j=1; j<=this.grid.nY; j++) {
-                //TODO
+                U_prev[X_DIM][i][j] = 0; // ??
+                U_prev[Y_DIM][i][j] = -0.5*Lx*(U[X_DIM][i+1][j] - U[X_DIM][i-1][j]) -
+                                       0.5*Ly*(U[X_DIM][i][j+1] - U[X_DIM][i][j-1]);
             }
         }
+        this.setBoundary(U_prev[X_DIM]);
+        this.setBoundary(U_prev[Y_DIM]);
+
+        for(var k=0; k<20; k++) {
+            for(var i=1; i<=this.grid.nX; i++) {
+                for(var j=1; j<=this.grid.nY; j++) {
+                    U_prev[X_DIM][i][j] = (U_prev[Y_DIM][i][j] +
+                                           U_prev[X_DIM][i-1][j] +
+                                           U_prev[X_DIM][i+1][j] +
+                                           U_prev[X_DIM][i][j-1] +
+                                           U_prev[X_DIM][i][j+1]
+                                          ) / 4;
+                }
+            }
+            this.setBoundary(U_prev[X_DIM]);
+        }
+
+        for(var i=1; i<=this.grid.nX; i++) {
+            for(var j=1; j<=this.grid.nY; j++) {
+                U[X_DIM][i][j] -= 0.5*(U_prev[X_DIM][i+1][j] - U_prev[X_DIM][i-1][j]) / Lx;
+                U[Y_DIM][i][j] -= 0.5*(U_prev[X_DIM][i][j+1] - U_prev[X_DIM][i][j-1]) / Ly;
+            }
+        }
+        this.setBoundary(U[X_DIM], BOUNDARY_OPPOSE_X);
+        this.setBoundary(U[Y_DIM], BOUNDARY_OPPOSE_Y);
     }
 
     // Sets the values of X on the boundary cells (inactive in the actual
@@ -149,9 +177,28 @@ function Simulator(N, width, height, visc, diff, timeStep) {
         X[edgeX][edgeY] = 0.5*(X[lastX][edgeY] + X[edgeX][lastY]);
     }
 
-    // Does one velocity field update.
-    this.vStep = function(U1, U0, visc, F, dT) {
-        // TODO
+    // Does one velocity field update. TODO - loop dimensions
+    this.vStep = function() {
+        this.addSource(this.grid.velocities[X_DIM],
+                       this.grid.prev_velocities[X_DIM]);
+        this.addSource(this.grid.velocities[Y_DIM],
+                       this.grid.prev_velocities[Y_DIM]);
+        this.grid.swapV();
+        this.diffuse(this.grid.velocities[X_DIM],
+                     this.grid.prev_velocities[X_DIM],
+                     BOUNDARY_OPPOSE_X);
+        this.diffuse(this.grid.velocities[Y_DIM],
+                     this.grid.prev_velocities[Y_DIM],
+                     BOUNDARY_OPPOSE_Y);
+        this.project(this.grid.velocities, this.grid.prev_velocities);
+        this.grid.swapV();
+        this.advect(this.grid.velocities[X_DIM],
+                    this.grid.prev_velocities[X_DIM],
+                    this.grid.velocities, BOUNDARY_OPPOSE_X);
+        this.advect(this.grid.velocities[Y_DIM],
+                    this.grid.prev_velocities[Y_DIM],
+                    this.grid.velocities, BOUNDARY_OPPOSE_Y);
+        this.project(this.grid.velocities, this.grid.prev_velocities);
     }
 
     // Does one scalar field update.
