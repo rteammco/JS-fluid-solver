@@ -179,37 +179,37 @@ function Simulator(N, width, height, visc, diff, timeStep) {
 
     // Does one velocity field update. TODO - loop dimensions
     this.vStep = function() {
-        this.addSource(this.grid.velocities[X_DIM],
-                       this.grid.prev_velocities[X_DIM]);
-        this.addSource(this.grid.velocities[Y_DIM],
-                       this.grid.prev_velocities[Y_DIM]);
+        this.addSource(this.grid.vel[X_DIM],
+                       this.grid.prev_vel[X_DIM]);
+        this.addSource(this.grid.vel[Y_DIM],
+                       this.grid.prev_vel[Y_DIM]);
         this.grid.swapV();
-        this.diffuse(this.grid.velocities[X_DIM],
-                     this.grid.prev_velocities[X_DIM],
+        this.diffuse(this.grid.vel[X_DIM],
+                     this.grid.prev_vel[X_DIM],
                      this.visc, BOUNDARY_OPPOSE_X);
-        this.diffuse(this.grid.velocities[Y_DIM],
-                     this.grid.prev_velocities[Y_DIM],
+        this.diffuse(this.grid.vel[Y_DIM],
+                     this.grid.prev_vel[Y_DIM],
                      this.visc, BOUNDARY_OPPOSE_Y);
-        this.project(this.grid.velocities, this.grid.prev_velocities);
+        this.project(this.grid.vel, this.grid.prev_vel);
         this.grid.swapV();
-        this.advect(this.grid.velocities[X_DIM],
-                    this.grid.prev_velocities[X_DIM],
-                    this.grid.velocities, BOUNDARY_OPPOSE_X);
-        this.advect(this.grid.velocities[Y_DIM],
-                    this.grid.prev_velocities[Y_DIM],
-                    this.grid.velocities, BOUNDARY_OPPOSE_Y);
-        this.project(this.grid.velocities, this.grid.prev_velocities);
+        this.advect(this.grid.vel[X_DIM],
+                    this.grid.prev_vel[X_DIM],
+                    this.grid.vel, BOUNDARY_OPPOSE_X);
+        this.advect(this.grid.vel[Y_DIM],
+                    this.grid.prev_vel[Y_DIM],
+                    this.grid.vel, BOUNDARY_OPPOSE_Y);
+        this.project(this.grid.vel, this.grid.prev_vel);
     }
 
     // Does one scalar field update.
     this.dStep = function() {
-        this.addSource(this.grid.densities, this.grid.prev_densities);
+        this.addSource(this.grid.dens, this.grid.prev_dens);
         this.grid.swapD();
-        this.diffuse(this.grid.densities, this.grid.prev_densities,
+        this.diffuse(this.grid.dens, this.grid.prev_dens,
                      this.diff, BOUNDARY_MIRROR);
         this.grid.swapD();
-        this.advect(this.grid.densities, this.grid.prev_densities,
-                    this.grid.velocities, BOUNDARY_MIRROR);
+        this.advect(this.grid.dens, this.grid.prev_dens,
+                    this.grid.vel, BOUNDARY_MIRROR);
         
     }
 
@@ -225,7 +225,4 @@ function Simulator(N, width, height, visc, diff, timeStep) {
     this.registerClick = function(x, y) {
         this.grid.registerClick(x, y);
     }
-
-    this.grid.velocities[X_DIM][10][10] = 1;
-    this.grid.velocities[Y_DIM][10][10] = 1;
 }

@@ -28,46 +28,45 @@ function Grid(nX, nY, width, height) {
     // set the number of cells in each axis
     this.nX = nX;
     this.nY = nY;
-    this.num_cells = (this.nX + 2) * (this.nY + 2);
 
     // compute the length of each cell in each axis
     this.len_cell_x = width / (this.nX + 2);
     this.len_cell_y = height / (this.nY + 2);
 
     // allocate the velocity and density field arrays
-    this.velocities = zeros3d(2, this.nX + 2, this.nY + 2); // TODO - 2 is dimension, need 4d arr for 3D
-    this.prev_velocities = zeros3d(2, this.nX + 2, this.nY + 2); // TODO - 2 is dimension
-    this.densities = zeros2d(this.nX + 2, this.nY + 2);
-    this.prev_densities = zeros2d(this.nX + 2, this.nY + 2);
+    this.vel = zeros3d(2, this.nX + 2, this.nY + 2); // TODO - 2 is dimension, need 4d arr for 3D
+    this.prev_vel = zeros3d(2, this.nX + 2, this.nY + 2); // TODO - 2 is dimension
+    this.dens = zeros2d(this.nX + 2, this.nY + 2);
+    this.prev_dens = zeros2d(this.nX + 2, this.nY + 2);
 
     // Clears out the prev value arrays.
     this.clearPrev = function() {
-        this.prev_velocities = zeros3d(2, this.nX + 2, this.nY + 2); // TODO - 2 is dimension
-        this.prev_densities = zeros2d(this.nX + 2, this.nY + 2);
+        this.prev_vel = zeros3d(2, this.nX + 2, this.nY + 2); // TODO - 2 is dimension
+        this.prev_dens = zeros2d(this.nX + 2, this.nY + 2);
     }
 
     // Swaps the velocity array pointers (old and new).
     this.swapV = function() {
-        var temp = this.velocities;
-        this.velocities = this.prev_velocities;
-        this.prev_velocities = temp;
+        var temp = this.vel;
+        this.vel = this.prev_vel;
+        this.prev_vel = temp;
     }
 
     // Swaps the density array pointers (old and new).
     this.swapD = function() {
-        var temp = this.densities;
-        this.densities = this.prev_densities;
-        this.prev_densities = temp;
+        var temp = this.dens;
+        this.dens = this.prev_dens;
+        this.prev_dens = temp;
     }
 
     // Adds an immediate source to the clicked cell - TODO
     this.registerClick = function(x, y) {
         var i = Math.floor(x / this.len_cell_x);
         var j = Math.floor(y / this.len_cell_y);
-        this.densities[i][j] = 1;
+        this.dens[i][j] = 1;
         var absMax = 100;
-        this.velocities[X_DIM][i][j] = 10;//2*absMax*Math.random()-absMax;
-        this.velocities[Y_DIM][i][j] = 0;//2*absMax*Math.random()-absMax;
+        this.vel[X_DIM][i][j] = 10;//2*absMax*Math.random()-absMax;
+        this.vel[Y_DIM][i][j] = 0;//2*absMax*Math.random()-absMax;
     }
 
     // Renders this Grid using the given context.
@@ -80,7 +79,7 @@ function Grid(nX, nY, width, height) {
         // draw the densities
         for(var i=0; i<this.nX+2; i++) {
             for(var j=0; j<this.nY+2; j++) {
-                var dens = this.densities[i][j];
+                var dens = this.dens[i][j];
                 if(dens > 0) {
                     var x = Math.floor(i * this.len_cell_x);
                     var y = Math.floor(j * this.len_cell_y);
@@ -119,8 +118,8 @@ function Grid(nX, nY, width, height) {
                 for(var j=0; j<this.nY+2; j++) {
                     var x = Math.floor(i * this.len_cell_x);
                     var y = Math.floor(j * this.len_cell_y);
-                    var vX = this.velocities[X_DIM][i][j];
-                    var vY = this.velocities[Y_DIM][i][j];
+                    var vX = this.vel[X_DIM][i][j];
+                    var vY = this.vel[Y_DIM][i][j];
                     vX *= 1000;
                     vY *= 1000;
                     ctx.beginPath();
