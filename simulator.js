@@ -43,8 +43,20 @@ function Simulator(N, width, height, visc, diff, timeStep) {
     // That is, the values of X "leak in" to and "leak out" of all
     // neighboring cells.
     // bMode is the boundary mode for setBoundary().
-    this.diffuse = function(X, X0, bMode) {
-        var a = this.timeStep * this.diff * this.grid.nX * this.grid.nY;
+    this.diffuse = function(X, X0, k, bMode) {
+        var N = this.grid.nX;
+        var a=this.timeStep * k * N * N;
+        for (var k=0; k<20; k++) {
+            for (var i=1; i<=N; i++) {
+                for (var j=1; j<=N; j++) {
+                    X[i][j] = (X0[i][j] + a*(X[i-1][j]+X[i+1][j]+
+                                X[i][j-1]+X[i][j+1]))/(1+4*a);
+                }
+            }
+            this.setBoundary(X, bMode);
+        }
+        /*
+        var a = this.timeStep * k * this.grid.nX * this.grid.nY;
         for(var k=0; k<20; k++) {
             for(var i=1; i<=this.grid.nX; i++) {
                 for(var j=1; j<=this.grid.nY; j++) {
@@ -54,7 +66,7 @@ function Simulator(N, width, height, visc, diff, timeStep) {
                 }
             }
             this.setBoundary(X, bMode);
-        }
+        }*/
     }
 
     // Sets the fields in D to be the values of D0 flowing in the direction
@@ -186,10 +198,10 @@ function Simulator(N, width, height, visc, diff, timeStep) {
         this.grid.swapV();
         this.diffuse(this.grid.velocities[X_DIM],
                      this.grid.prev_velocities[X_DIM],
-                     BOUNDARY_OPPOSE_X);
+                     this.visc, BOUNDARY_OPPOSE_X);
         this.diffuse(this.grid.velocities[Y_DIM],
                      this.grid.prev_velocities[Y_DIM],
-                     BOUNDARY_OPPOSE_Y);
+                     this.visc, BOUNDARY_OPPOSE_Y);
         this.project(this.grid.velocities, this.grid.prev_velocities);
         this.grid.swapV();
         this.advect(this.grid.velocities[X_DIM],
@@ -206,7 +218,7 @@ function Simulator(N, width, height, visc, diff, timeStep) {
         this.addSource(this.grid.densities, this.grid.prev_densities);
         this.grid.swapD();
         this.diffuse(this.grid.densities, this.grid.prev_densities,
-                     BOUNDARY_MIRROR);
+                     this.diff, BOUNDARY_MIRROR);
         this.grid.swapD();
         this.advect(this.grid.densities, this.grid.prev_densities,
                     this.grid.velocities, BOUNDARY_MIRROR);

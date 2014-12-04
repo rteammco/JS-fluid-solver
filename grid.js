@@ -72,6 +72,7 @@ function Grid(nX, nY, width, height) {
     //  and show_vel to true to render the velocity vectors.
     // TODO - overwrite for 3D
     this.render = function(ctx, show_grid = false, show_vels = false) {
+        ctx.clearRect(0, 0, width, height);
         ctx.save();
         // draw the densities
         for(var i=0; i<this.nX+2; i++) {
