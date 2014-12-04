@@ -53,8 +53,8 @@ function Simulator(N, width, height, visc, diff, timeStep) {
                               ) / (1 + 4*a);
                 }
             }
+            this.setBoundary(X, bMode);
         }
-        this.setBoundary(X, bMode);
     }
 
     // Sets the fields in D to be the values of D0 flowing in the direction
@@ -155,8 +155,8 @@ function Simulator(N, width, height, visc, diff, timeStep) {
                 X[edgeX][j] = -X[lastX][j];
             }
             else {
-                X[0][j] = X[1][j];
-                X[edgeX][j] = X[lastX][j];
+                X[0][j] = 0;//X[1][j];
+                X[edgeX][j] = 0;//X[lastX][j];
             }
         }
         // update top and bottom edges
@@ -166,8 +166,8 @@ function Simulator(N, width, height, visc, diff, timeStep) {
                 X[i][edgeY] = -X[i][lastY];
             }
             else {
-                X[i][0] = X[i][1];
-                X[i][edgeY] = X[i][lastY];
+                X[i][0] = 0;//X[i][1];
+                X[i][edgeY] = 0;//X[i][lastY];
             }
         }
         // update corners to be averages of their nearest edge neighbors
@@ -205,9 +205,9 @@ function Simulator(N, width, height, visc, diff, timeStep) {
     this.dStep = function() {
         this.addSource(this.grid.densities, this.grid.prev_densities);
         this.grid.swapD();
-        /*this.diffuse(this.grid.densities, this.grid.prev_densities,
+        this.diffuse(this.grid.densities, this.grid.prev_densities,
                      BOUNDARY_MIRROR);
-        this.grid.swapD();*/
+        this.grid.swapD();
         this.advect(this.grid.densities, this.grid.prev_densities,
                     this.grid.velocities, BOUNDARY_MIRROR);
         
@@ -217,7 +217,7 @@ function Simulator(N, width, height, visc, diff, timeStep) {
     this.step = function(ctx) {
         this.vStep();
         this.dStep();
-        this.grid.render(ctx, true, true);
+        this.grid.render(ctx, false, true);
     }
 
     // When the user clicks, interface with the stuff.
