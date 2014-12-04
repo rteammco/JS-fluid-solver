@@ -4,6 +4,10 @@
  */
 
 
+N_SOLVER_ITERS = 20;
+
+N_DIMS = 2;
+
 X_DIM = 0;
 Y_DIM = 1;
 Z_DIM = 2;
@@ -31,21 +35,23 @@ function Simulator(N, width, height, visc, diff, timeStep) {
     // initialize the grid structure
     this.grid = new Grid(N, N, width, height);
 
-    // To each element of array X, adds the respective element of force
-    // F (also an array) multiplied by the time step.
-    this.addSource = function(X, F) {
+    // To each element of array dest adds the respective element of the
+    // source (also an array) multiplied by the time step.
+    // Use to add source arrays for velocity and density.
+    this.addSource = function(dest, source) {
         for(var i=0; i<this.grid.nX; i++)
             for(var j=0; j<this.grid.nY; j++)
-                X[i][j] += this.timeStep * F[i][j];
+                dest[i][j] += this.timeStep * source[i][j];
     }
 
-    // Sets the values of vector X to the "diffused" values from X0.
-    // That is, the values of X "leak in" to and "leak out" of all
+    // Sets the values of vector cur to the "diffused" values.
+    // That is, the values of cur "leak in" to and "leak out" of all
     // neighboring cells.
+    // k is the diffusion constant (diff or visc, depending)
     // bMode is the boundary mode for setBoundary().
     this.diffuse = function(cur, prev, k, bMode) {
         var a = this.timeStep * k * this.grid.nX * this.grid.nY;
-        for(var iter=0; iter<20; iter++) {
+        for(var iter=0; iter<N_SOLVER_ITERS; iter++) {
             for(var i=1; i<=this.grid.nX; i++) {
                 for(var j=1; j<=this.grid.nY; j++) {
                     cur[i][j] = (prev[i][j]
@@ -58,24 +64,24 @@ function Simulator(N, width, height, visc, diff, timeStep) {
         }
     }
 
-    // Sets the fields in D to be the values of D0 flowing in the direction
-    // given by velocity V (a multi-dimensional velocity field).
+    // Sets the fields in cur to be the values of prev flowing in the
+    // direction given by velocity vel (a multi-dimensional velocity field).
     // bMode is the boundary mode for setBoundary().
-    this.advect = function(D, D0, V, bMode) {
-        var dX = this.grid.nX;// * this.timeStep;
-        var dY = this.grid.nY;// * this.timeStep;
+    this.advect = function(cur, prev, vel, bMode) {
+        var dX = this.grid.nX;// * this.timeStep; // TODO!
+        var dY = this.grid.nY;// * this.timeStep; // TODO!
         for(var i=1; i<=this.grid.nX; i++) {
             for(var j=1; j<=this.grid.nY; j++) {
-                // get resulting x coordinate cell
-                var x = i - dX * V[X_DIM][i][j];
+                // get resulting x coordinate cell after backtracking by vel
+                var x = i - dX * vel[X_DIM][i][j];
                 if(x < 0.5)
                     x = 0.5;
                 if(x > this.grid.nX + 0.5)
                     x = this.grid.nX + 0.5;
                 var i0 = Math.floor(x);
                 var i1 = i0 + 1;
-                // get resulting y coodinate cell
-                var y = j - dY * V[Y_DIM][i][j];
+                // get resulting y coodinate cell after backtracking by vel
+                var y = j - dY * vel[Y_DIM][i][j];
                 if(y < 0.5)
                     y = 0.5;
                 if(y > this.grid.nY + 0.5)
@@ -87,15 +93,15 @@ function Simulator(N, width, height, visc, diff, timeStep) {
                 var s0 = 1 - s1;
                 var t1 = y - j0;
                 var t0 = 1 - t1;
-                D[i][j] = s0*(t0*D0[i0][j0] + t1*D0[i0][j1]) +
-                        + s1*(t0*D0[i1][j0] + t1*D0[i1][j1]);
+                cur[i][j] = s0*(t0*prev[i0][j0] + t1*prev[i0][j1]) +
+                            s1*(t0*prev[i1][j0] + t1*prev[i1][j1]);
             }
         }
-        this.setBoundary(D, bMode);
+        this.setBoundary(cur, bMode);
     }
 
     // Project step forces velocities to be mass-conserving.
-    this.project = function(vel, buf) { // u v p div
+    this.project = function(vel, buf) {
         var Lx = 1.0 / this.grid.nX;
         var Ly = 1.0 / this.grid.nY;
         var p = buf[X_DIM];
@@ -111,7 +117,7 @@ function Simulator(N, width, height, visc, diff, timeStep) {
         this.setBoundary(div);
         this.setBoundary(p);
 
-        for(var iter=0; iter<20; iter++) {
+        for(var iter=0; iter<N_SOLVER_ITERS; iter++) {
             for(var i=1; i<=this.grid.nX; i++) {
                 for(var j=1; j<=this.grid.nY; j++) {
                     p[i][j] = (div[i][j]
@@ -178,27 +184,20 @@ function Simulator(N, width, height, visc, diff, timeStep) {
         X[edgeX][edgeY] = 0.5*(X[lastX][edgeY] + X[edgeX][lastY]);
     }
 
-    // Does one velocity field update. TODO - loop dimensions
+    // Does one velocity field update.
     this.vStep = function() {
-        this.addSource(this.grid.vel[X_DIM],
-                       this.grid.prev_vel[X_DIM]);
-        this.addSource(this.grid.vel[Y_DIM],
-                       this.grid.prev_vel[Y_DIM]);
+        for(var dim=0; dim<N_DIMS; dim++)
+            this.addSource(this.grid.vel[dim], this.grid.prev_vel[dim]);
         this.grid.swapV();
-        this.diffuse(this.grid.vel[X_DIM],
-                     this.grid.prev_vel[X_DIM],
-                     this.visc, BOUNDARY_OPPOSE_X);
-        this.diffuse(this.grid.vel[Y_DIM],
-                     this.grid.prev_vel[Y_DIM],
-                     this.visc, BOUNDARY_OPPOSE_Y);
+
+        for(var dim=0; dim<N_DIMS; dim++)
+            this.diffuse(this.grid.vel[dim], this.grid.prev_vel[dim],
+                         this.visc, dim+1); // TODO - boundary dim
         this.project(this.grid.vel, this.grid.prev_vel);
         this.grid.swapV();
-        this.advect(this.grid.vel[X_DIM],
-                    this.grid.prev_vel[X_DIM],
-                    this.grid.vel, BOUNDARY_OPPOSE_X);
-        this.advect(this.grid.vel[Y_DIM],
-                    this.grid.prev_vel[Y_DIM],
-                    this.grid.vel, BOUNDARY_OPPOSE_Y);
+        for(var dim=0; dim<N_DIMS; dim++)
+            this.advect(this.grid.vel[dim], this.grid.prev_vel[dim],
+                        this.grid.vel, dim+1); // TODO - boundary dim
         this.project(this.grid.vel, this.grid.prev_vel);
     }
 
@@ -217,7 +216,7 @@ function Simulator(N, width, height, visc, diff, timeStep) {
     // Take one step in the simulation.
     this.step = function(ctx) {
         this.grid.clearPrev();
-        this.grid.vel[X_DIM][15][15] = 10;
+        this.grid.vel[X_DIM][5][25] = 5;
         this.vStep();
         this.dStep();
         this.grid.render(ctx, false, false);
