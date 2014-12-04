@@ -186,8 +186,10 @@ function Simulator(N, width, height, visc, diff, timeStep) {
 
     // Does one velocity field update.
     this.vStep = function() {
-        for(var dim=0; dim<N_DIMS; dim++)
+        for(var dim=0; dim<N_DIMS; dim++) {
             this.addSource(this.grid.vel[dim], this.grid.prev_vel[dim]);
+            this.addSource(this.grid.vel[dim], this.v_src[dim]);
+        }
         this.grid.swapV();
 
         for(var dim=0; dim<N_DIMS; dim++)
@@ -214,9 +216,10 @@ function Simulator(N, width, height, visc, diff, timeStep) {
     }
 
     // Take one step in the simulation.
+    this.v_src = zeros3d(2, this.grid.nX + 2, this.grid.nY + 2);
+    this.v_src[X_DIM][5][25] = 500;
     this.step = function(ctx) {
         this.grid.clearPrev();
-        this.grid.vel[X_DIM][5][25] = 5;
         this.vStep();
         this.dStep();
         this.grid.render(ctx, false, false);
