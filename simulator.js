@@ -205,9 +205,9 @@ function Simulator(N, width, height, visc, diff, timeStep) {
     this.dStep = function() {
         this.addSource(this.grid.densities, this.grid.prev_densities);
         this.grid.swapD();
-        this.diffuse(this.grid.densities, this.grid.prev_densities,
+        /*this.diffuse(this.grid.densities, this.grid.prev_densities,
                      BOUNDARY_MIRROR);
-        this.grid.swapD();
+        this.grid.swapD();*/
         this.advect(this.grid.densities, this.grid.prev_densities,
                     this.grid.velocities, BOUNDARY_MIRROR);
         
@@ -217,11 +217,14 @@ function Simulator(N, width, height, visc, diff, timeStep) {
     this.step = function(ctx) {
         this.vStep();
         this.dStep();
-        this.grid.render(ctx);
+        this.grid.render(ctx, true, true);
     }
 
     // When the user clicks, interface with the stuff.
     this.registerClick = function(x, y) {
         this.grid.registerClick(x, y);
     }
+
+    this.grid.velocities[X_DIM][2][2] = 1;
+    this.grid.velocities[Y_DIM][2][2] = 1;
 }

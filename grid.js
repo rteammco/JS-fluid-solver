@@ -8,6 +8,7 @@
 GRID_COLOR = "white";
 GRID_POINT_COLOR = "white";
 GRID_ORIGIN_COLOR = "yellow";
+GRID_VELOCITY_COLOR = "yellow";
 GRID_LINE_WIDTH = 1;
 GRID_POINT_SIZE = 3;
 GRID_ORIGIN_SIZE = 5;
@@ -64,8 +65,21 @@ function Grid(nX, nY, width, height) {
     // Set flags show_grid to true to also render the grid itself,
     //  and show_vel to true to render the velocity vectors.
     // TODO - overwrite for 3D
-    this.render = function(ctx, show_grid = false, show_vel = false) {
+    this.render = function(ctx, show_grid = false, show_vels = false) {
         ctx.save();
+        // draw the densities
+        for(var i=0; i<this.nX+2; i++) {
+            for(var j=0; j<this.nY+2; j++) {
+                var dens = this.densities[i][j];
+                if(dens > 0) {
+                    var x = Math.floor(i * this.len_cell_x);
+                    var y = Math.floor(j * this.len_cell_y);
+                    ctx.fillStyle = "rgba(255, 0, 0, " + dens + ")";
+                    ctx.fillRect(x, y, this.len_cell_x, this.len_cell_y);
+                }
+            }
+        }
+        // if option is enabled, draw the grid
         if(show_grid) {
             ctx.strokeStyle = GRID_COLOR;
             ctx.lineWidth = GRID_LINE_WIDTH;
@@ -86,15 +100,22 @@ function Grid(nX, nY, width, height) {
                 ctx.stroke();
             }
         }
-        // draw the densities
-        for(var i=0; i<this.nX+2; i++) {
-            for(var j=0; j<this.nY+2; j++) {
-                var dens = this.densities[i][j];
-                if(dens > 0) {
+        // if option is enabled, draw the velocity vectors
+        if(show_vels) {
+            ctx.strokeStyle = GRID_VELOCITY_COLOR;
+            ctx.lineWidth = GRID_LINE_WIDTH;
+            for(var i=0; i<this.nX+2; i++) {
+                for(var j=0; j<this.nY+2; j++) {
                     var x = Math.floor(i * this.len_cell_x);
                     var y = Math.floor(j * this.len_cell_y);
-                    ctx.fillStyle = "rgba(255, 0, 0, " + dens + ")";
-                    ctx.fillRect(x, y, this.len_cell_x, this.len_cell_y);
+                    var vX = this.velocities[X_DIM][i][j];
+                    var vY = this.velocities[Y_DIM][i][j];
+                    vX *= 1000;
+                    vY *= 1000;
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                    ctx.lineTo(x+vX, y+vY);
+                    ctx.stroke();
                 }
             }
         }
