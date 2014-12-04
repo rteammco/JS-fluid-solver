@@ -21,9 +21,13 @@ BOUNDARY_OPPOSE_Y = 2;
  */
 function Simulator(N, width, height, timeStep) {
     this.timeStep = timeStep;
-
-    // initialize the grid structure
     this.grid = new Grid([N, N, 1], [width, height, 0], 2);
+
+    // velocity and denisty source arrays
+    this.v_src = zeros4d(3, this.grid.N[X_DIM]+2, this.grid.N[Y_DIM]+2,
+                            this.grid.N[Z_DIM]+2);
+    this.d_src = zeros3d(this.grid.N[X_DIM]+2, this.grid.N[Y_DIM]+2,
+                         this.grid.N[Z_DIM]+2);
 
     // To each element of array dest adds the respective element of the
     // source (also an array) multiplied by the time step.
@@ -239,12 +243,6 @@ function Simulator(N, width, height, timeStep) {
                     this.grid.vel, BOUNDARY_MIRROR);
         
     }
-
-    // velocity and denisty source arrays
-    this.v_src = zeros4d(3, this.grid.N[X_DIM]+2, this.grid.N[Y_DIM]+2,
-                            this.grid.N[Z_DIM]+2);
-    this.d_src = zeros3d(this.grid.N[X_DIM]+2, this.grid.N[Y_DIM]+2,
-                         this.grid.N[Z_DIM]+2);
     
     // Take one step in the simulation.
     this.step = function(ctx) {
@@ -259,8 +257,6 @@ function Simulator(N, width, height, timeStep) {
     // remove the gravity component again.
     // The gravity is added as a gravity current.
     this.addGravity = function(g) {
-        // TODO - 9.8 too big, needs to be scaled by dT?
-        g *= this.timeStep;
         for(var i=0; i<this.grid.N[X_DIM]+2; i++)
             for(var j=0; j<this.grid.N[Y_DIM]+2; j++)
                 for(var k=0; k<this.grid.N[Z_DIM]+2; k++)
@@ -272,12 +268,15 @@ function Simulator(N, width, height, timeStep) {
         this.grid.registerClick(x, y, val);
     }
 
-    // add a density source to the simulation
+    // Adds a density source to the simulation which will generate the given
+    // amount of density each time step.
     this.addDensSource = function(x, y, val) {
+        // TODO - scale val by timestep?
         var idx = this.grid.getContainerCell(x, y, 0);
         this.d_src[idx.i][idx.j][1] = val;
     }
 
+    // Adds a velocity source to the simulation in the specified direction.
     this.addVelSource = function(x, y, vX, vY) {
         var idx = this.grid.getContainerCell(x, y);
         this.v_src[X_DIM][idx.i][idx.j][1] = vX;
