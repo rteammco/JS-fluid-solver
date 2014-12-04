@@ -59,12 +59,19 @@ function Grid(N, size, nDims = 2) {
         this.prev_dens = temp;
     }
 
-    // Adds an immediate source to the clicked cell - TODO
-    // TODO - only works for 2D
-    this.registerClick = function(x, y) {
+    // Returns an object containing the i, j, k index of the cell that
+    // contains the given x, y, z point.
+    this.getContainerCell = function(x, y, z=0) {
         var i = Math.floor(x / this.len_cells[X_DIM]);
         var j = Math.floor(y / this.len_cells[Y_DIM]);
-        this.dens[i][j][1] = 1;
+        var k = Math.floor(z / this.len_cells[Z_DIM]);
+        return {i:i, j:j, k:k};
+    }
+    // Adds an immediate source to the clicked cell - TODO
+    // TODO - only works for 2D
+    this.registerClick = function(x, y, val) {
+        var idx = this.getContainerCell(x, y);
+        this.dens[idx.i][idx.j][1] = val;
     }
 
     // Renders this Grid using the given context.

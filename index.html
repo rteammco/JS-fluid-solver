@@ -24,7 +24,50 @@
     <p><canvas id="fluids_canvas" width="860" height="540" style="background: #000000">
     Your browser does not support the canvas element.
     </canvas></p>
-    
+
+    <p>
+        Show Grid:
+        <input type="checkbox" id="show_grid" onchange="setParamsFromUI();" />
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        Show Velocities:
+        <input type="checkbox" id="show_vels" onchange="setParamsFromUI();" />
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        Keep Prev Values:
+        <input type="checkbox" id="keep_prev" onchange="setParamsFromUI();" />
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        Viscosity:
+        <input type="text" id="visc_val" onchange="setParamsFromUI();" />
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        Diffusion:
+        <input type="text" id="diff_val" onchange="setParamsFromUI();" />
+    </p>
+    <p>
+        Mouse Action:
+    </p>
+    <p>
+        Add Density:
+        <input type="radio" name="act_select" id="action_dens_drag" onchange="setParamsFromUI();">
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        Add Density Source:
+        <input type="radio" name="act_select" id="action_dens_src" onchange="setParamsFromUI();">
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        Add Velocity Source:
+        <input type="radio" name="act_select" id="action_vel_src" onchange="setParamsFromUI();">
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        Velocity X:
+        <input type="text" id="vel_x" onchange="setParamsFromUI();" />
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        Velocity Y:
+        <input type="text" id="vel_y" onchange="setParamsFromUI();" />
+    </p>
+    <p>
+        <button onclick="resetSim();">Reset Simulation</button>
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        <button onclick="resetGUIParams();">Reset Parameters</button>
+    </p>
+    <p>
+        Grid Size (N):
+        <input type="text" id="grid_size" onchange="setParamsFromUI();" />
     <p>
     	The simulation source code can be viewed <a href="fluids.js">here</a>.
     </p>

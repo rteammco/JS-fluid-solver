@@ -17,13 +17,9 @@ BOUNDARY_OPPOSE_Y = 2;
  *      N - the size of the grid (N by N practical grid).
  *      width - the width of the grid region.
  *      height - the height of the grid region.
- *      visc - the viscocity constant.
- *      diff - the diffusion constant.
  *      timeStep - the time step.
  */
-function Simulator(N, width, height, visc, diff, timeStep) {
-    this.diff = diff;
-    this.visc = visc;
+function Simulator(N, width, height, timeStep) {
     this.timeStep = timeStep;
 
     // initialize the grid structure
@@ -189,7 +185,7 @@ function Simulator(N, width, height, visc, diff, timeStep) {
 
         for(var dim=0; dim<N_DIMS; dim++)
             this.diffuse(this.grid.vel[dim], this.grid.prev_vel[dim],
-                         this.visc, dim+1); // TODO - boundary dim
+                         visc, dim+1); // TODO - boundary dim
         this.project(this.grid.vel, this.grid.prev_vel);
         this.grid.swapV();
         for(var dim=0; dim<N_DIMS; dim++)
@@ -201,28 +197,45 @@ function Simulator(N, width, height, visc, diff, timeStep) {
     // Does one scalar field update.
     this.dStep = function() {
         this.addSource(this.grid.dens, this.grid.prev_dens);
+        this.addSource(this.grid.dens, this.d_src);
         this.grid.swapD();
         this.diffuse(this.grid.dens, this.grid.prev_dens,
-                     this.diff, BOUNDARY_MIRROR);
+                     diff, BOUNDARY_MIRROR);
         this.grid.swapD();
         this.advect(this.grid.dens, this.grid.prev_dens,
                     this.grid.vel, BOUNDARY_MIRROR);
         
     }
 
-    // Take one step in the simulation.
+    // velocity and denisty source arrays
     this.v_src = zeros4d(3, this.grid.N[X_DIM]+2, this.grid.N[Y_DIM]+2,
                             this.grid.N[Z_DIM]+2);
-    this.v_src[X_DIM][5][25][1] = 500;
+    this.d_src = zeros3d(this.grid.N[X_DIM]+2, this.grid.N[Y_DIM]+2,
+                         this.grid.N[Z_DIM]+2);
+    
+    // Take one step in the simulation.
     this.step = function(ctx) {
-        this.grid.clearPrev();
+        if(!keep_prev)
+            this.grid.clearPrev();
         this.vStep();
         this.dStep();
-        this.grid.render(ctx, false, true);
+        this.grid.render(ctx, show_grid, show_vels);
     }
 
     // When the user clicks, interface with the stuff.
-    this.registerClick = function(x, y) {
-        this.grid.registerClick(x, y);
+    this.insertDensity = function(x, y, val) {
+        this.grid.registerClick(x, y, val);
+    }
+
+    // add a density source to the simulation
+    this.addDensSource = function(x, y, val) {
+        var idx = this.grid.getContainerCell(x, y);
+        this.d_src[idx.i][idx.j][1] = val;
+    }
+
+    this.addVelSource = function(x, y, vX, vY) {
+        var idx = this.grid.getContainerCell(x, y);
+        this.v_src[X_DIM][idx.i][idx.j][1] = vX;
+        this.v_src[Y_DIM][idx.i][idx.j][1] = vY;
     }
 }
