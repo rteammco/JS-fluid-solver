@@ -33,6 +33,8 @@ function Grid(nX, nY, width, height) {
     // compute the length of each cell in each axis
     this.len_cell_x = width / (this.nX + 2);
     this.len_cell_y = height / (this.nY + 2);
+    this.len_cell_x_disp = width / this.nX;
+    this.len_cell_y_disp = height / this.nY;
 
     // allocate the velocity and density field arrays
     this.velocities = zeros3d(2, this.nX + 2, this.nY + 2); // TODO - 2 is dimension, need 4d arr for 3D
@@ -56,8 +58,8 @@ function Grid(nX, nY, width, height) {
 
     // Adds an immediate source to the clicked cell - TODO
     this.registerClick = function(x, y) {
-        var i = Math.floor(x / this.len_cell_x);
-        var j = Math.floor(y / this.len_cell_y);
+        var i = Math.floor(x / this.len_cell_x_disp) + 1;
+        var j = Math.floor(y / this.len_cell_y_disp) + 1;
         this.densities[i][j] = 1;
     }
 
@@ -68,14 +70,14 @@ function Grid(nX, nY, width, height) {
     this.render = function(ctx, show_grid = false, show_vels = false) {
         ctx.save();
         // draw the densities
-        for(var i=0; i<this.nX+2; i++) {
-            for(var j=0; j<this.nY+2; j++) {
+        for(var i=1; i<=this.nX; i++) {
+            for(var j=1; j<=this.nY; j++) {
                 var dens = this.densities[i][j];
                 if(dens > 0) {
-                    var x = Math.floor(i * this.len_cell_x);
-                    var y = Math.floor(j * this.len_cell_y);
+                    var x = Math.floor((i-1) * this.len_cell_x_disp);
+                    var y = Math.floor((j-1) * this.len_cell_y_disp);
                     ctx.fillStyle = "rgba(255, 0, 0, " + dens + ")";
-                    ctx.fillRect(x, y, this.len_cell_x, this.len_cell_y);
+                    ctx.fillRect(x, y, this.len_cell_x_disp, this.len_cell_y_disp);
                 }
             }
         }
@@ -84,17 +86,17 @@ function Grid(nX, nY, width, height) {
             ctx.strokeStyle = GRID_COLOR;
             ctx.lineWidth = GRID_LINE_WIDTH;
             // draw the x axis lines
-            for(var i=0; i<this.nX+2; i++) {
+            for(var i=1; i<=this.nX; i++) {
                 ctx.beginPath();
-                var x = Math.floor(i * this.len_cell_x);
+                var x = Math.floor(i * this.len_cell_x_disp);
                 ctx.moveTo(x, 0);
                 ctx.lineTo(x, canvas.height);
                 ctx.stroke();
             }
             // draw the y axis lines
-            for(var i=0; i<this.nY+2; i++) {
+            for(var j=1; j<=this.nY; j++) {
                 ctx.beginPath();
-                var y = Math.floor(i * this.len_cell_y);
+                var y = Math.floor(j * this.len_cell_y_disp);
                 ctx.moveTo(0, y);
                 ctx.lineTo(canvas.width, y);
                 ctx.stroke();
@@ -104,10 +106,10 @@ function Grid(nX, nY, width, height) {
         if(show_vels) {
             ctx.strokeStyle = GRID_VELOCITY_COLOR;
             ctx.lineWidth = GRID_LINE_WIDTH;
-            for(var i=0; i<this.nX+2; i++) {
-                for(var j=0; j<this.nY+2; j++) {
-                    var x = Math.floor(i * this.len_cell_x);
-                    var y = Math.floor(j * this.len_cell_y);
+            for(var i=1; i<=this.nX; i++) {
+                for(var j=1; j<=this.nY; j++) {
+                    var x = Math.floor(i * this.len_cell_x_disp);
+                    var y = Math.floor(j * this.len_cell_y_disp);
                     var vX = this.velocities[X_DIM][i][j];
                     var vY = this.velocities[Y_DIM][i][j];
                     vX *= 1000;
