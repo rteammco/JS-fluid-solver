@@ -11,6 +11,8 @@ X_DIM = 0;
 Y_DIM = 1;
 Z_DIM = 2;
 
+G_FORCE = -9.8;
+
 ACT_DENSITY_DRAG = 0;
 ACT_DENSITY_SRC = 1;
 ACT_VELOCITY_SRC = 2;
@@ -148,6 +150,15 @@ function mouseAction(event) {
         lastX = x;
         lastY = y;
     }
+}
+
+
+/* Adds a gravitational current to the simulation. Calling this
+ * repeatedly will just keep adding it over and over.
+ */
+function addGravityToSim() {
+    // note: pass in negative because y-axis is inverted
+    sim.addGravity(-G_FORCE);
 }
 
 

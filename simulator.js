@@ -222,6 +222,18 @@ function Simulator(N, width, height, timeStep) {
         this.grid.render(ctx, show_grid, show_vels);
     }
 
+    // Adds gravity to the simulation. Pass negative g-force value to
+    // remove the gravity component again.
+    // The gravity is added as a gravity current.
+    this.addGravity = function(g) {
+        // TODO - 9.8 too big, needs to be scaled by dT?
+        g *= this.timeStep;
+        for(var i=0; i<this.grid.N[X_DIM]+2; i++)
+            for(var j=0; j<this.grid.N[Y_DIM]+2; j++)
+                for(var k=0; k<this.grid.N[Z_DIM]+2; k++)
+                    this.v_src[Y_DIM][i][j][k] = g;
+    }
+
     // When the user clicks, interface with the stuff.
     this.insertDensity = function(x, y, val) {
         this.grid.registerClick(x, y, val);
