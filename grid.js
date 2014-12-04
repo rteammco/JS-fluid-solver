@@ -6,12 +6,9 @@
 
 /* Grid Object Constants: */
 GRID_COLOR = "white";
-GRID_POINT_COLOR = "white";
-GRID_ORIGIN_COLOR = "yellow";
+GRID_DENSITY_COLOR = "0, 0, 255";
 GRID_VELOCITY_COLOR = "yellow";
 GRID_LINE_WIDTH = 1;
-GRID_POINT_SIZE = 3;
-GRID_ORIGIN_SIZE = 5;
 
 
 /* The Grid object:
@@ -64,9 +61,9 @@ function Grid(nX, nY, width, height) {
         var i = Math.floor(x / this.len_cell_x);
         var j = Math.floor(y / this.len_cell_y);
         this.dens[i][j] = 1;
-        var absMax = 100;
-        this.vel[X_DIM][i][j] = 10;//2*absMax*Math.random()-absMax;
-        this.vel[Y_DIM][i][j] = 0;//2*absMax*Math.random()-absMax;
+        //var absMax = 100;
+        //this.vel[X_DIM][i][j] = 10;//2*absMax*Math.random()-absMax;
+        //this.vel[Y_DIM][i][j] = 0;//2*absMax*Math.random()-absMax;
     }
 
     // Renders this Grid using the given context.
@@ -84,7 +81,7 @@ function Grid(nX, nY, width, height) {
                     var x = Math.floor(i * this.len_cell_x);
                     var y = Math.floor(j * this.len_cell_y);
                     dens *= 100;
-                    ctx.fillStyle = "rgba(255, 0, 0, " + dens + ")";
+                    ctx.fillStyle = "rgba(" + GRID_DENSITY_COLOR + ", " + dens + ")";
                     ctx.fillRect(x, y, this.len_cell_x, this.len_cell_y);
                 }
             }
@@ -120,8 +117,8 @@ function Grid(nX, nY, width, height) {
                     var y = Math.floor(j * this.len_cell_y);
                     var vX = this.vel[X_DIM][i][j];
                     var vY = this.vel[Y_DIM][i][j];
-                    vX *= 1000;
-                    vY *= 1000;
+                    vX *= 100;
+                    vY *= 100;
                     ctx.beginPath();
                     ctx.moveTo(x, y);
                     ctx.lineTo(x+vX, y+vY);

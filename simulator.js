@@ -24,9 +24,9 @@ BOUNDARY_OPPOSE_Y = 2;
  *      timeStep - the time step.
  */
 function Simulator(N, width, height, visc, diff, timeStep) {
-    this.diff = diff; // diffusion constant
-    this.visc = visc; // fluid viscosity
-    this.timeStep = timeStep;     // time step
+    this.diff = diff;
+    this.visc = visc;
+    this.timeStep = timeStep;
 
     // initialize the grid structure
     this.grid = new Grid(N, N, width, height);
@@ -43,17 +43,18 @@ function Simulator(N, width, height, visc, diff, timeStep) {
     // That is, the values of X "leak in" to and "leak out" of all
     // neighboring cells.
     // bMode is the boundary mode for setBoundary().
-    this.diffuse = function(X, X0, k, bMode) {
+    this.diffuse = function(cur, prev, k, bMode) {
         var a = this.timeStep * k * this.grid.nX * this.grid.nY;
-        for(var k=0; k<20; k++) {
+        for(var iter=0; iter<20; iter++) {
             for(var i=1; i<=this.grid.nX; i++) {
                 for(var j=1; j<=this.grid.nY; j++) {
-                    X[i][j] = (X0[i][j] + a*(X[i-1][j] + X[i+1][j] +
-                                             X[i][j-1] + X[i][j+1])
+                    cur[i][j] = (prev[i][j]
+                                 + a*(cur[i-1][j] + cur[i+1][j] +
+                                      cur[i][j-1] + cur[i][j+1])
                               ) / (1 + 4*a);
                 }
             }
-            this.setBoundary(X, bMode);
+            this.setBoundary(cur, bMode);
         }
     }
 
@@ -61,8 +62,8 @@ function Simulator(N, width, height, visc, diff, timeStep) {
     // given by velocity V (a multi-dimensional velocity field).
     // bMode is the boundary mode for setBoundary().
     this.advect = function(D, D0, V, bMode) {
-        var dX = this.grid.nX;// * this.timeStep; TODO?
-        var dY = this.grid.nY;// * this.timeStep; TODO?
+        var dX = this.grid.nX;// * this.timeStep;
+        var dY = this.grid.nY;// * this.timeStep;
         for(var i=1; i<=this.grid.nX; i++) {
             for(var j=1; j<=this.grid.nY; j++) {
                 // get resulting x coordinate cell
@@ -216,9 +217,10 @@ function Simulator(N, width, height, visc, diff, timeStep) {
     // Take one step in the simulation.
     this.step = function(ctx) {
         this.grid.clearPrev();
+        this.grid.vel[X_DIM][15][15] = 10;
         this.vStep();
         this.dStep();
-        this.grid.render(ctx, false, true);
+        this.grid.render(ctx, false, false);
     }
 
     // When the user clicks, interface with the stuff.
