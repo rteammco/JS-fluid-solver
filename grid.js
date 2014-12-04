@@ -65,6 +65,8 @@ function Grid(nX, nY, width, height) {
         var i = Math.floor(x / this.len_cell_x);
         var j = Math.floor(y / this.len_cell_y);
         this.densities[i][j] = 1;
+        this.velocities[X_DIM][i][j] = 20*Math.random()-10;
+        this.velocities[Y_DIM][i][j] = 20*Math.random()-10;
     }
 
     // Renders this Grid using the given context.

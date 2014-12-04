@@ -44,18 +44,6 @@ function Simulator(N, width, height, visc, diff, timeStep) {
     // neighboring cells.
     // bMode is the boundary mode for setBoundary().
     this.diffuse = function(X, X0, k, bMode) {
-        var N = this.grid.nX;
-        var a=this.timeStep * k * N * N;
-        for (var k=0; k<20; k++) {
-            for (var i=1; i<=N; i++) {
-                for (var j=1; j<=N; j++) {
-                    X[i][j] = (X0[i][j] + a*(X[i-1][j]+X[i+1][j]+
-                                X[i][j-1]+X[i][j+1]))/(1+4*a);
-                }
-            }
-            this.setBoundary(X, bMode);
-        }
-        /*
         var a = this.timeStep * k * this.grid.nX * this.grid.nY;
         for(var k=0; k<20; k++) {
             for(var i=1; i<=this.grid.nX; i++) {
@@ -66,7 +54,7 @@ function Simulator(N, width, height, visc, diff, timeStep) {
                 }
             }
             this.setBoundary(X, bMode);
-        }*/
+        }
     }
 
     // Sets the fields in D to be the values of D0 flowing in the direction
