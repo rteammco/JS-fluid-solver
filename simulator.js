@@ -61,8 +61,8 @@ function Simulator(N, width, height, visc, diff, timeStep) {
     // given by velocity V (a multi-dimensional velocity field).
     // bMode is the boundary mode for setBoundary().
     this.advect = function(D, D0, V, bMode) {
-        var dX = this.grid.nX * this.timeStep;
-        var dY = this.grid.nY * this.timeStep;
+        var dX = this.grid.nX;// * this.timeStep; TODO?
+        var dY = this.grid.nY;// * this.timeStep; TODO?
         for(var i=1; i<=this.grid.nX; i++) {
             for(var j=1; j<=this.grid.nY; j++) {
                 // get resulting x coordinate cell
