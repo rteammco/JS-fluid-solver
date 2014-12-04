@@ -23,7 +23,7 @@ function Simulator(N, width, height, timeStep) {
     this.timeStep = timeStep;
 
     // initialize the grid structure
-    this.grid = new Grid([N, N, 1], [width, height, 0]);
+    this.grid = new Grid([N, N, 1], [width, height, 0], 2);
 
     // To each element of array dest adds the respective element of the
     // source (also an array) multiplied by the time step.
@@ -105,8 +105,8 @@ function Simulator(N, width, height, timeStep) {
                 p[i][j][1] = 0;
             }
         }
-        this.setBoundary(div);
-        this.setBoundary(p);
+        this.setBoundary(div, BOUNDARY_MIRROR);
+        this.setBoundary(p, BOUNDARY_MIRROR);
 
         for(var iter=0; iter<N_SOLVER_ITERS; iter++) {
             for(var i=1; i<=this.grid.N[X_DIM]; i++) {
@@ -117,7 +117,7 @@ function Simulator(N, width, height, timeStep) {
                                  ) / 4;
                 }
             }
-            this.setBoundary(p);
+            this.setBoundary(p, BOUNDARY_MIRROR);
         }
 
         for(var i=1; i<=this.grid.N[X_DIM]; i++) {
@@ -139,7 +139,7 @@ function Simulator(N, width, height, timeStep) {
     //      values of the closest inner neighors.
     //  BOUNDARY_OPPOSE_Y => the top and bottom edges will have inverse
     //      values of the closest inner neighbors.
-    this.setBoundary = function(X, mode = BOUNDARY_MIRROR) {
+    this.setBoundary = function(X, mode) {
         // index 1 and "last" are the endpoints of the active grid
         var lastX = this.grid.N[X_DIM];
         var lastY = this.grid.N[Y_DIM];
@@ -229,7 +229,7 @@ function Simulator(N, width, height, timeStep) {
 
     // add a density source to the simulation
     this.addDensSource = function(x, y, val) {
-        var idx = this.grid.getContainerCell(x, y);
+        var idx = this.grid.getContainerCell(x, y, 0);
         this.d_src[idx.i][idx.j][1] = val;
     }
 

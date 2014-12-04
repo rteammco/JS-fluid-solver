@@ -22,7 +22,7 @@ GRID_LINE_WIDTH = 1;
  *         for 2D, set this to 0.
  *     nDims = the number of dimensions (2 or 3).
  */
-function Grid(N, size, nDims = 2) {
+function Grid(N, size, nDims) {
     // set the number of cells in each axis
     this.N = N;
     this.size = size;
@@ -61,7 +61,7 @@ function Grid(N, size, nDims = 2) {
 
     // Returns an object containing the i, j, k index of the cell that
     // contains the given x, y, z point.
-    this.getContainerCell = function(x, y, z=0) {
+    this.getContainerCell = function(x, y, z) {
         var i = Math.floor(x / this.len_cells[X_DIM]);
         var j = Math.floor(y / this.len_cells[Y_DIM]);
         var k = Math.floor(z / this.len_cells[Z_DIM]);
@@ -70,7 +70,7 @@ function Grid(N, size, nDims = 2) {
     // Adds an immediate source to the clicked cell - TODO
     // TODO - only works for 2D
     this.registerClick = function(x, y, val) {
-        var idx = this.getContainerCell(x, y);
+        var idx = this.getContainerCell(x, y, 0);
         this.dens[idx.i][idx.j][1] = val;
     }
 
@@ -78,7 +78,7 @@ function Grid(N, size, nDims = 2) {
     // Set flags show_grid to true to also render the grid itself,
     //  and show_vel to true to render the velocity vectors.
     // Render method is changed depending on Grid dimension.
-    this.render = function(ctx, show_grid = false, show_vels = false) {
+    this.render = function(ctx, show_grid, show_vels) {
         if(this.nDims == 2)
             this.render2D(ctx, show_grid, show_vels);
         else
