@@ -40,6 +40,12 @@ function Grid(nX, nY, width, height) {
     this.densities = zeros2d(this.nX + 2, this.nY + 2);
     this.prev_densities = zeros2d(this.nX + 2, this.nY + 2);
 
+    // Clears out the prev value arrays.
+    this.clearPrev = function() {
+        this.prev_velocities = zeros3d(2, this.nX + 2, this.nY + 2); // TODO - 2 is dimension
+        this.prev_densities = zeros2d(this.nX + 2, this.nY + 2);
+    }
+
     // Swaps the velocity array pointers (old and new).
     this.swapV = function() {
         var temp = this.velocities;

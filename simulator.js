@@ -215,9 +215,7 @@ function Simulator(N, width, height, visc, diff, timeStep) {
 
     // Take one step in the simulation.
     this.step = function(ctx) {
-        // TODO - clean up
-        this.grid.prev_velocities = zeros3d(2, this.grid.nX+2, this.grid.nY+2);
-        this.grid.prev_densities = zeros2d(this.grid.nX+2, this.grid.nY+2);
+        this.grid.clearPrev();
         this.vStep();
         this.dStep();
         this.grid.render(ctx, false, true);
