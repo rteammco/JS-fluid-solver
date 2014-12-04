@@ -47,7 +47,7 @@ function Simulator(N, width, height, timeStep) {
                 for(var j=1; j<=this.grid.N[Y_DIM]; j++) {
                     cur[i][j][1] = (prev[i][j][1]
                                     + a*(cur[i-1][j][1] + cur[i+1][j][1] +
-                                      cur[i][j-1][1] + cur[i][j+1][1])
+                                         cur[i][j-1][1] + cur[i][j+1][1])
                               ) / (1 + 4*a);
                 }
             }
@@ -61,28 +61,48 @@ function Simulator(N, width, height, timeStep) {
     this.advect = function(cur, prev, vel, bMode) {
         var dX = this.grid.N[X_DIM];// * this.timeStep; // TODO!
         var dY = this.grid.N[Y_DIM];// * this.timeStep; // TODO!
+        var lX = this.grid.len_cells[X_DIM];
+        var lY = this.grid.len_cells[Y_DIM];
         for(var i=1; i<=this.grid.N[X_DIM]; i++) {
             for(var j=1; j<=this.grid.N[Y_DIM]; j++) {
                 // get resulting x coordinate cell after backtracking by vel
-                var x = i - dX * vel[X_DIM][i][j][1];
+                /*var x = i - dX * vel[X_DIM][i][j][1];
                 if(x < 0.5)
                     x = 0.5;
                 if(x > this.grid.N[X_DIM] + 0.5)
                     x = this.grid.N[X_DIM] + 0.5;
-                var i0 = Math.floor(x);
+                var i0 = Math.floor(x);*/
+                var start_x = i * lX;
+                var end_x = start_x - this.timeStep * vel[X_DIM][i][j][1];
+                var i0 = Math.floor(end_x / lX);
                 var i1 = i0 + 1;
+                if(end_x < lX / 2)
+                    end_x = lX / 2;
+                if(end_x > this.grid.N[X_DIM] * lX)
+                    end_x = this.grid.N[X_DIM] * lX;
                 // get resulting y coodinate cell after backtracking by vel
-                var y = j - dY * vel[Y_DIM][i][j][1];
+                /*var y = j - dY * vel[Y_DIM][i][j][1];
                 if(y < 0.5)
                     y = 0.5;
                 if(y > this.grid.N[Y_DIM] + 0.5)
                     y = this.grid.N[Y_DIM] + 0.5;
-                var j0 = Math.floor(y);
+                var j0 = Math.floor(y);*/
+                var start_y = j * lY;
+                var end_y = start_y - this.timeStep * vel[Y_DIM][i][j][1];
+                if(end_y < lY / 2)
+                    end_y = lY / 2;
+                if(end_y > this.grid.N[Y_DIM] * lY)
+                    end_y = this.grid.N[Y_DIM] * lY;
+                var j0 = Math.floor(end_y / lY); // TODO - horked
                 var j1 = j0 + 1;
                 // bilinear interopolation:
-                var s1 = x - i0;
+                /*var s1 = x - i0;
                 var s0 = 1 - s1;
                 var t1 = y - j0;
+                var t0 = 1 - t1;*/
+                var s1 = (end_x - start_x)/lX;
+                var s0 = 1 - s1;
+                var t1 = (end_y - start_y)/lY;
                 var t0 = 1 - t1;
                 cur[i][j][1] = s0*(t0*prev[i0][j0][1] + t1*prev[i0][j1][1]) +
                                s1*(t0*prev[i1][j0][1] + t1*prev[i1][j1][1]);
