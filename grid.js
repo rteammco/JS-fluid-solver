@@ -5,7 +5,7 @@
 
 
 /* Grid Object Constants: */
-GRID_COLOR = "white";
+GRID_COLOR = "#555555";
 GRID_DENSITY_COLOR = "0, 0, 255";
 GRID_VELOCITY_COLOR = "yellow";
 GRID_LINE_WIDTH = 1;
