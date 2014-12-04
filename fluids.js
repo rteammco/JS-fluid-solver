@@ -5,7 +5,13 @@
 
 
 /* Global variables: */
-NDIM = 2; // 2d simulation - TODO make generic updateable to 3d
+
+N_DIMS = 2;
+
+X_DIM = 0;
+Y_DIM = 1;
+Z_DIM = 2;
+
 NX = 10;
 NY = 10;
 var canvas;
@@ -34,15 +40,13 @@ function zeros3d(n, m, l) {
     return arr;
 }
 
-/* A basic 2D or 3D Point object that contains an x, y, z position.
- * Z position can be ignored (defaults to 0).
- */
-function Point(x, y, z = 0) {
-    this.x = x;
-    this.y = y;
-    this.z = z;
+/* Generates a preallocated 4D zero-array of size n by m by l by k. */
+function zeros4d(n, m, l, k) {
+    var arr = new Array();
+    for(var i=0; i<n; i++)
+        arr.push(zeros3d(m, l, k));
+    return arr;
 }
-
 
 /* When document is loaded, initialze the simulation.
  */

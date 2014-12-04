@@ -12,34 +12,55 @@ GRID_LINE_WIDTH = 1;
 
 
 /* The Grid object:
-   Maintains the current state of the simulation and keeps track
-   of all velocities and forces. Also provides an API for drawing
-   the grid itself and obtaining information about each grid cell.
-   Parameters:
-       nX = number of cells in the x-axis.
-       nY = number of cells in the y-axis.
-       width = the width of the space.
-       height = the height of the space.
+ * Maintains the current state of the simulation and keeps track
+ * of all velocities and forces. Also provides an API for drawing
+ * the grid itself and obtaining information about each grid cell.
+ * Parameters:
+ *     N = array with number of cells in each dimension (x, y, z?) axis.
+ *     size = array with the size of each dimension (widht, height, depth?).
+ * The number of dimensions is decided from the length of the given arrays.
  */
-function Grid(nX, nY, width, height) {
+function Grid(N, size) {
     // set the number of cells in each axis
-    this.nX = nX;
-    this.nY = nY;
+    this.N = N;
+    this.size = size;
+    this.nDims = N.length;
 
     // compute the length of each cell in each axis
-    this.len_cell_x = width / (this.nX + 2);
-    this.len_cell_y = height / (this.nY + 2);
+    this.len_cells = new Array();
+    for(var i=0; i<this.nDims; i++)
+        this.len_cells.push(this.size[i] / (this.N[i] + 2));
 
-    // allocate the velocity and density field arrays
-    this.vel = zeros3d(2, this.nX + 2, this.nY + 2); // TODO - 2 is dimension, need 4d arr for 3D
-    this.prev_vel = zeros3d(2, this.nX + 2, this.nY + 2); // TODO - 2 is dimension
-    this.dens = zeros2d(this.nX + 2, this.nY + 2);
-    this.prev_dens = zeros2d(this.nX + 2, this.nY + 2);
+    // Generates an empty 2D or 3D velocity array.
+    this.generateVelArray = function() {
+        var vel;
+        if(this.nDims == 2) // TODO - cleaner way of doing this for arbitrary dim?
+            vel = zeros3d(2, this.N[X_DIM]+2, this.N[Y_DIM]+2);
+        else
+            vel = zeros4d(3, this.N[X_DIM]+2, this.N[Y_DIM]+2, this.N[Z_DIM]+2);
+        return vel;
+    }
+
+    // Generates an empty 2D or 3D density array.
+    this.generateDensArray = function() {
+        var dens;
+        if(this.nDims == 2) // TODO - cleaner way of doing this for arbitrary dim?
+            dens = zeros2d(this.N[X_DIM]+2, this.N[Y_DIM]+2);
+        else
+            dens = zeros3d(this.N[X_DIM]+2, this.N[Y_DIM]+2, this.N[Z_DIM]+2);
+        return dens;
+    }
+    
+    // allocate the velocity and density field arrays (2 or 3 dimensional)
+    this.vel = this.generateVelArray();
+    this.prev_vel = this.generateVelArray();
+    this.dens = this.generateDensArray();
+    this.prev_dens = this.generateDensArray();
 
     // Clears out the prev value arrays.
     this.clearPrev = function() {
-        this.prev_vel = zeros3d(2, this.nX + 2, this.nY + 2); // TODO - 2 is dimension
-        this.prev_dens = zeros2d(this.nX + 2, this.nY + 2);
+        this.prev_vel = this.generateVelArray();
+        this.prev_dens = this.generateDensArray();
     }
 
     // Swaps the velocity array pointers (old and new).
@@ -57,32 +78,38 @@ function Grid(nX, nY, width, height) {
     }
 
     // Adds an immediate source to the clicked cell - TODO
+    // TODO - only works for 2D
     this.registerClick = function(x, y) {
-        var i = Math.floor(x / this.len_cell_x);
-        var j = Math.floor(y / this.len_cell_y);
+        var i = Math.floor(x / this.len_cells[X_DIM]);
+        var j = Math.floor(y / this.len_cells[Y_DIM]);
         this.dens[i][j] = 1;
-        //var absMax = 100;
-        //this.vel[X_DIM][i][j] = 10;//2*absMax*Math.random()-absMax;
-        //this.vel[Y_DIM][i][j] = 0;//2*absMax*Math.random()-absMax;
     }
 
     // Renders this Grid using the given context.
     // Set flags show_grid to true to also render the grid itself,
     //  and show_vel to true to render the velocity vectors.
-    // TODO - overwrite for 3D
+    // Render method is changed depending on Grid dimension.
     this.render = function(ctx, show_grid = false, show_vels = false) {
-        ctx.clearRect(0, 0, width, height);
+        if(this.nDims == 2)
+            this.render2D(ctx, show_grid, show_vels);
+        else
+            alert("Dimension not supported.");
+    }
+
+    // Render a 2D representation of this Grid. Only works for 2D setup.
+    this.render2D = function(ctx, show_grid, show_vels) {
+        ctx.clearRect(0, 0, this.size[X_DIM], this.size[Y_DIM]);
         ctx.save();
         // draw the densities
-        for(var i=0; i<this.nX+2; i++) {
-            for(var j=0; j<this.nY+2; j++) {
+        for(var i=0; i<this.N[X_DIM]+2; i++) {
+            for(var j=0; j<this.N[Y_DIM]+2; j++) {
                 var dens = this.dens[i][j];
                 if(dens > 0) {
-                    var x = Math.floor(i * this.len_cell_x);
-                    var y = Math.floor(j * this.len_cell_y);
+                    var x = Math.floor(i * this.len_cells[X_DIM]);
+                    var y = Math.floor(j * this.len_cells[Y_DIM]);
                     dens *= 100;
                     ctx.fillStyle = "rgba(" + GRID_DENSITY_COLOR + ", " + dens + ")";
-                    ctx.fillRect(x, y, this.len_cell_x, this.len_cell_y);
+                    ctx.fillRect(x, y, this.len_cells[X_DIM], this.len_cells[Y_DIM]);
                 }
             }
         }
@@ -91,17 +118,17 @@ function Grid(nX, nY, width, height) {
             ctx.strokeStyle = GRID_COLOR;
             ctx.lineWidth = GRID_LINE_WIDTH;
             // draw the x axis lines
-            for(var i=0; i<this.nX+2; i++) {
+            for(var i=0; i<this.N[X_DIM]+2; i++) {
                 ctx.beginPath();
-                var x = Math.floor(i * this.len_cell_x);
+                var x = Math.floor(i * this.len_cells[X_DIM]);
                 ctx.moveTo(x, 0);
                 ctx.lineTo(x, canvas.height);
                 ctx.stroke();
             }
             // draw the y axis lines
-            for(var i=0; i<this.nY+2; i++) {
+            for(var i=0; i<this.N[Y_DIM]+2; i++) {
                 ctx.beginPath();
-                var y = Math.floor(i * this.len_cell_y);
+                var y = Math.floor(i * this.len_cells[Y_DIM]);
                 ctx.moveTo(0, y);
                 ctx.lineTo(canvas.width, y);
                 ctx.stroke();
@@ -111,10 +138,10 @@ function Grid(nX, nY, width, height) {
         if(show_vels) {
             ctx.strokeStyle = GRID_VELOCITY_COLOR;
             ctx.lineWidth = GRID_LINE_WIDTH;
-            for(var i=0; i<this.nX+2; i++) {
-                for(var j=0; j<this.nY+2; j++) {
-                    var x = Math.floor(i * this.len_cell_x);
-                    var y = Math.floor(j * this.len_cell_y);
+            for(var i=0; i<this.N[X_DIM]+2; i++) {
+                for(var j=0; j<this.N[Y_DIM]+2; j++) {
+                    var x = Math.floor(i * this.len_cells[X_DIM]);
+                    var y = Math.floor(j * this.len_cells[Y_DIM]);
                     var vX = this.vel[X_DIM][i][j];
                     var vY = this.vel[Y_DIM][i][j];
                     vX *= 100;
