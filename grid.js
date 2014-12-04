@@ -97,6 +97,8 @@ function Grid(N, size, nDims) {
                     var x = Math.floor(i * this.len_cells[X_DIM]);
                     var y = Math.floor(j * this.len_cells[Y_DIM]);
                     dens *= 100;
+                    if(dens > 1)
+                        dens = 1;
                     ctx.fillStyle = "rgba(" + GRID_DENSITY_COLOR + ", " + dens + ")";
                     ctx.fillRect(x, y, this.len_cells[X_DIM], this.len_cells[Y_DIM]);
                 }
