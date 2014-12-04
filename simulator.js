@@ -155,8 +155,8 @@ function Simulator(N, width, height, visc, diff, timeStep) {
                 X[edgeX][j] = -X[lastX][j];
             }
             else {
-                X[0][j] = 0;//X[1][j];
-                X[edgeX][j] = 0;//X[lastX][j];
+                X[0][j] = X[1][j];
+                X[edgeX][j] = X[lastX][j];
             }
         }
         // update top and bottom edges
@@ -166,8 +166,8 @@ function Simulator(N, width, height, visc, diff, timeStep) {
                 X[i][edgeY] = -X[i][lastY];
             }
             else {
-                X[i][0] = 0;//X[i][1];
-                X[i][edgeY] = 0;//X[i][lastY];
+                X[i][0] = X[i][1];
+                X[i][edgeY] = X[i][lastY];
             }
         }
         // update corners to be averages of their nearest edge neighbors
@@ -215,6 +215,8 @@ function Simulator(N, width, height, visc, diff, timeStep) {
 
     // Take one step in the simulation.
     this.step = function(ctx) {
+        this.grid.prev_velocities = zeros3d(2, this.grid.nX+2, this.grid.nY+2);
+        this.grid.prev_densities = zeros2d(this.grid.nX+2, this.grid.nY+2);
         this.vStep();
         this.dStep();
         this.grid.render(ctx, false, true);
@@ -225,6 +227,6 @@ function Simulator(N, width, height, visc, diff, timeStep) {
         this.grid.registerClick(x, y);
     }
 
-    this.grid.velocities[X_DIM][2][2] = 1;
-    this.grid.velocities[Y_DIM][2][2] = 1;
+    this.grid.velocities[X_DIM][10][10] = 1;
+    this.grid.velocities[Y_DIM][10][10] = 1;
 }
