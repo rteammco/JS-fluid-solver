@@ -94,72 +94,42 @@ function Simulator(N, width, height, visc, diff, timeStep) {
     }
 
     // Project step forces velocities to be mass-conserving.
-    this.project = function(U, U_prev) { // u v p div
-        var u = U[X_DIM];
-        var v = U[Y_DIM];
-        var p = U_prev[X_DIM];
-        var div = U_prev[Y_DIM];
-        var N = this.grid.nX;
-        var h = 1.0/N;
-        for (var i=1; i<=N; i++) {
-            for (var j=1; j<=N; j++) {
-                div[i][j] = -0.5*h*(u[i+1][j]-u[i-1][j]+
-                        v[i][j+1]-v[i][j-1]);
+    this.project = function(vel, buf) { // u v p div
+        var Lx = 1.0 / this.grid.nX;
+        var Ly = 1.0 / this.grid.nY;
+        var p = buf[X_DIM];
+        var div = buf[Y_DIM];
+        
+        for(var i=1; i<=this.grid.nX; i++) {
+            for(var j=1; j<=this.grid.nY; j++) {
+                div[i][j] = -0.5*(Lx*(vel[X_DIM][i+1][j] - vel[X_DIM][i-1][j]) +
+                                  Ly*(vel[Y_DIM][i][j+1] - vel[Y_DIM][i][j-1]));
                 p[i][j] = 0;
             }
         }
-        this.setBoundary(div); this.setBoundary(p);
-        for (var k=0; k<20; k++) {
-            for (var i=1; i<=N; i++) {
-                for (var j=1; j<=N; j++) {
-                    p[i][j] = (div[i][j]+p[i-1][j]+p[i+1][j]+
-                            p[i][j-1]+p[i][j+1])/4;
+        this.setBoundary(div);
+        this.setBoundary(p);
+
+        for(var iter=0; iter<20; iter++) {
+            for(var i=1; i<=this.grid.nX; i++) {
+                for(var j=1; j<=this.grid.nY; j++) {
+                    p[i][j] = (div[i][j]
+                               + p[i-1][j] + p[i+1][j]
+                               + p[i][j-1] + p[i][j+1]
+                              ) / 4;
                 }
             }
             this.setBoundary(p);
         }
-        for (var i=1; i<=N; i++) {
-            for (var j=1; j<=N; j++) {
-                u[i][j] -= 0.5*(p[i+1][j]-p[i-1][j])/h;
-                v[i][j] -= 0.5*(p[i][j+1]-p[i][j-1])/h;
-            }
-        }
-        this.setBoundary(u, 1); this.setBoundary(v, 2);
-        /*var Lx = 1.0 / this.grid.nX;
-        var Ly = 1.0 / this.grid.nY;
-        
-        for(var i=1; i<=this.grid.nX; i++) {
-            for(var j=1; j<=this.grid.nY; j++) {
-                U_prev[X_DIM][i][j] = 0; // ??
-                U_prev[Y_DIM][i][j] = -0.5*Lx*(U[X_DIM][i+1][j] - U[X_DIM][i-1][j]) -
-                                       0.5*Ly*(U[X_DIM][i][j+1] - U[X_DIM][i][j-1]);
-            }
-        }
-        this.setBoundary(U_prev[X_DIM]);
-        this.setBoundary(U_prev[Y_DIM]);
-
-        for(var k=0; k<20; k++) {
-            for(var i=1; i<=this.grid.nX; i++) {
-                for(var j=1; j<=this.grid.nY; j++) {
-                    U_prev[X_DIM][i][j] = (U_prev[Y_DIM][i][j] +
-                                           U_prev[X_DIM][i-1][j] +
-                                           U_prev[X_DIM][i+1][j] +
-                                           U_prev[X_DIM][i][j-1] +
-                                           U_prev[X_DIM][i][j+1]
-                                          ) / 4;
-                }
-            }
-            this.setBoundary(U_prev[X_DIM]);
-        }
 
         for(var i=1; i<=this.grid.nX; i++) {
             for(var j=1; j<=this.grid.nY; j++) {
-                U[X_DIM][i][j] -= 0.5*(U_prev[X_DIM][i+1][j] - U_prev[X_DIM][i-1][j]) / Lx;
-                U[Y_DIM][i][j] -= 0.5*(U_prev[X_DIM][i][j+1] - U_prev[X_DIM][i][j-1]) / Ly;
+                vel[X_DIM][i][j] -= 0.5*(p[i+1][j] - p[i-1][j]) / Lx;
+                vel[Y_DIM][i][j] -= 0.5*(p[i][j+1] - p[i][j-1]) / Ly;
             }
         }
-        this.setBoundary(U[X_DIM], BOUNDARY_OPPOSE_X);
-        this.setBoundary(U[Y_DIM], BOUNDARY_OPPOSE_Y);*/
+        this.setBoundary(vel[X_DIM], BOUNDARY_OPPOSE_X);
+        this.setBoundary(vel[Y_DIM], BOUNDARY_OPPOSE_Y);
     }
 
     // Sets the values of X on the boundary cells (inactive in the actual
