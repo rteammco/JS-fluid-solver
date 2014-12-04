@@ -65,8 +65,9 @@ function Grid(nX, nY, width, height) {
         var i = Math.floor(x / this.len_cell_x);
         var j = Math.floor(y / this.len_cell_y);
         this.densities[i][j] = 1;
-        this.velocities[X_DIM][i][j] = 20*Math.random()-10;
-        this.velocities[Y_DIM][i][j] = 20*Math.random()-10;
+        var absMax = 100;
+        this.velocities[X_DIM][i][j] = 10;//2*absMax*Math.random()-absMax;
+        this.velocities[Y_DIM][i][j] = 0;//2*absMax*Math.random()-absMax;
     }
 
     // Renders this Grid using the given context.
@@ -83,6 +84,7 @@ function Grid(nX, nY, width, height) {
                 if(dens > 0) {
                     var x = Math.floor(i * this.len_cell_x);
                     var y = Math.floor(j * this.len_cell_y);
+                    dens *= 100;
                     ctx.fillStyle = "rgba(255, 0, 0, " + dens + ")";
                     ctx.fillRect(x, y, this.len_cell_x, this.len_cell_y);
                 }
