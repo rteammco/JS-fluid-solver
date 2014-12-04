@@ -27,15 +27,16 @@ function Simulator(N, width, height, visc, diff, timeStep) {
     this.timeStep = timeStep;
 
     // initialize the grid structure
-    this.grid = new Grid([N, N], [width, height]);
+    this.grid = new Grid([N, N, 1], [width, height, 0]);
 
     // To each element of array dest adds the respective element of the
     // source (also an array) multiplied by the time step.
     // Use to add source arrays for velocity and density.
     this.addSource = function(dest, source) {
-        for(var i=0; i<this.grid.N[X_DIM]; i++)
-            for(var j=0; j<this.grid.N[Y_DIM]; j++)
-                dest[i][j] += this.timeStep * source[i][j];
+        for(var i=0; i<this.grid.N[X_DIM]+2; i++)
+            for(var j=0; j<this.grid.N[Y_DIM]+2; j++)
+                for(var k=0; k<this.grid.N[Z_DIM]+2; k++)
+                    dest[i][j][k] += this.timeStep * source[i][j][k];
     }
 
     // Sets the values of vector cur to the "diffused" values.
@@ -48,9 +49,9 @@ function Simulator(N, width, height, visc, diff, timeStep) {
         for(var iter=0; iter<N_SOLVER_ITERS; iter++) {
             for(var i=1; i<=this.grid.N[X_DIM]; i++) {
                 for(var j=1; j<=this.grid.N[Y_DIM]; j++) {
-                    cur[i][j] = (prev[i][j]
-                                 + a*(cur[i-1][j] + cur[i+1][j] +
-                                      cur[i][j-1] + cur[i][j+1])
+                    cur[i][j][1] = (prev[i][j][1]
+                                    + a*(cur[i-1][j][1] + cur[i+1][j][1] +
+                                      cur[i][j-1][1] + cur[i][j+1][1])
                               ) / (1 + 4*a);
                 }
             }
@@ -67,7 +68,7 @@ function Simulator(N, width, height, visc, diff, timeStep) {
         for(var i=1; i<=this.grid.N[X_DIM]; i++) {
             for(var j=1; j<=this.grid.N[Y_DIM]; j++) {
                 // get resulting x coordinate cell after backtracking by vel
-                var x = i - dX * vel[X_DIM][i][j];
+                var x = i - dX * vel[X_DIM][i][j][1];
                 if(x < 0.5)
                     x = 0.5;
                 if(x > this.grid.N[X_DIM] + 0.5)
@@ -75,7 +76,7 @@ function Simulator(N, width, height, visc, diff, timeStep) {
                 var i0 = Math.floor(x);
                 var i1 = i0 + 1;
                 // get resulting y coodinate cell after backtracking by vel
-                var y = j - dY * vel[Y_DIM][i][j];
+                var y = j - dY * vel[Y_DIM][i][j][1];
                 if(y < 0.5)
                     y = 0.5;
                 if(y > this.grid.N[Y_DIM] + 0.5)
@@ -87,8 +88,8 @@ function Simulator(N, width, height, visc, diff, timeStep) {
                 var s0 = 1 - s1;
                 var t1 = y - j0;
                 var t0 = 1 - t1;
-                cur[i][j] = s0*(t0*prev[i0][j0] + t1*prev[i0][j1]) +
-                            s1*(t0*prev[i1][j0] + t1*prev[i1][j1]);
+                cur[i][j][1] = s0*(t0*prev[i0][j0][1] + t1*prev[i0][j1][1]) +
+                               s1*(t0*prev[i1][j0][1] + t1*prev[i1][j1][1]);
             }
         }
         this.setBoundary(cur, bMode);
@@ -103,9 +104,9 @@ function Simulator(N, width, height, visc, diff, timeStep) {
         
         for(var i=1; i<=this.grid.N[X_DIM]; i++) {
             for(var j=1; j<=this.grid.N[Y_DIM]; j++) {
-                div[i][j] = -0.5*(Lx*(vel[X_DIM][i+1][j] - vel[X_DIM][i-1][j]) +
-                                  Ly*(vel[Y_DIM][i][j+1] - vel[Y_DIM][i][j-1]));
-                p[i][j] = 0;
+                div[i][j][1] = -0.5*(Lx*(vel[X_DIM][i+1][j][1] - vel[X_DIM][i-1][j][1]) +
+                                     Ly*(vel[Y_DIM][i][j+1][1] - vel[Y_DIM][i][j-1][1]));
+                p[i][j][1] = 0;
             }
         }
         this.setBoundary(div);
@@ -114,10 +115,10 @@ function Simulator(N, width, height, visc, diff, timeStep) {
         for(var iter=0; iter<N_SOLVER_ITERS; iter++) {
             for(var i=1; i<=this.grid.N[X_DIM]; i++) {
                 for(var j=1; j<=this.grid.N[Y_DIM]; j++) {
-                    p[i][j] = (div[i][j]
-                               + p[i-1][j] + p[i+1][j]
-                               + p[i][j-1] + p[i][j+1]
-                              ) / 4;
+                    p[i][j][1] = (div[i][j][1]
+                                  + p[i-1][j][1] + p[i+1][j][1]
+                                  + p[i][j-1][1] + p[i][j+1][1]
+                                 ) / 4;
                 }
             }
             this.setBoundary(p);
@@ -125,8 +126,8 @@ function Simulator(N, width, height, visc, diff, timeStep) {
 
         for(var i=1; i<=this.grid.N[X_DIM]; i++) {
             for(var j=1; j<=this.grid.N[Y_DIM]; j++) {
-                vel[X_DIM][i][j] -= 0.5*(p[i+1][j] - p[i-1][j]) / Lx;
-                vel[Y_DIM][i][j] -= 0.5*(p[i][j+1] - p[i][j-1]) / Ly;
+                vel[X_DIM][i][j][1] -= 0.5*(p[i+1][j][1] - p[i-1][j][1]) / Lx;
+                vel[Y_DIM][i][j][1] -= 0.5*(p[i][j+1][1] - p[i][j-1][1]) / Ly;
             }
         }
         this.setBoundary(vel[X_DIM], BOUNDARY_OPPOSE_X);
@@ -152,30 +153,30 @@ function Simulator(N, width, height, visc, diff, timeStep) {
         // update left and right edges
         for(var j=1; j<=lastY; j++) {
             if(mode == BOUNDARY_OPPOSE_X) {
-                X[0][j] = -X[1][j];
-                X[edgeX][j] = -X[lastX][j];
+                X[0][j][1] = -X[1][j][1];
+                X[edgeX][j][1] = -X[lastX][j][1];
             }
             else {
-                X[0][j] = X[1][j];
-                X[edgeX][j] = X[lastX][j];
+                X[0][j][1] = X[1][j][1];
+                X[edgeX][j][1] = X[lastX][j][1];
             }
         }
         // update top and bottom edges
         for(var i=1; i<=lastX; i++) {
             if(mode == BOUNDARY_OPPOSE_Y) {
-                X[i][0] = -X[i][1];
-                X[i][edgeY] = -X[i][lastY];
+                X[i][0][1] = -X[i][1][1];
+                X[i][edgeY][1] = -X[i][lastY][1];
             }
             else {
-                X[i][0] = X[i][1];
-                X[i][edgeY] = X[i][lastY];
+                X[i][0][1] = X[i][1][1];
+                X[i][edgeY][1] = X[i][lastY][1];
             }
         }
         // update corners to be averages of their nearest edge neighbors
-        X[0][0]         = 0.5*(X[1][0] + X[0][1]);
-        X[0][edgeY]     = 0.5*(X[1][edgeY] + X[0][lastY]);
-        X[edgeX][0]     = 0.5*(X[lastX][0] + X[edgeX][1]);
-        X[edgeX][edgeY] = 0.5*(X[lastX][edgeY] + X[edgeX][lastY]);
+        X[0][0][1]         = 0.5*(X[1][0][1] + X[0][1][1]);
+        X[0][edgeY][1]     = 0.5*(X[1][edgeY][1] + X[0][lastY][1]);
+        X[edgeX][0][1]     = 0.5*(X[lastX][0][1] + X[edgeX][1][1]);
+        X[edgeX][edgeY][1] = 0.5*(X[lastX][edgeY][1] + X[edgeX][lastY][1]);
     }
 
     // Does one velocity field update.
@@ -210,13 +211,14 @@ function Simulator(N, width, height, visc, diff, timeStep) {
     }
 
     // Take one step in the simulation.
-    this.v_src = zeros3d(2, this.grid.N[X_DIM] + 2, this.grid.N[Y_DIM] + 2);
-    this.v_src[X_DIM][5][25] = 500;
+    this.v_src = zeros4d(3, this.grid.N[X_DIM]+2, this.grid.N[Y_DIM]+2,
+                            this.grid.N[Z_DIM]+2);
+    this.v_src[X_DIM][5][25][1] = 500;
     this.step = function(ctx) {
         this.grid.clearPrev();
         this.vStep();
         this.dStep();
-        this.grid.render(ctx, false, false);
+        this.grid.render(ctx, false, true);
     }
 
     // When the user clicks, interface with the stuff.

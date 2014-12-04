@@ -16,51 +16,33 @@ GRID_LINE_WIDTH = 1;
  * of all velocities and forces. Also provides an API for drawing
  * the grid itself and obtaining information about each grid cell.
  * Parameters:
- *     N = array with number of cells in each dimension (x, y, z?) axis.
- *     size = array with the size of each dimension (widht, height, depth?).
- * The number of dimensions is decided from the length of the given arrays.
+ *     N = array with number of cells in each dimension (x, y, z) axis.
+ *         for 2D, set this to 1.
+ *     size = array with the size of each dimension (widht, height, depth).
+ *         for 2D, set this to 0.
+ *     nDims = the number of dimensions (2 or 3).
  */
-function Grid(N, size) {
+function Grid(N, size, nDims = 2) {
     // set the number of cells in each axis
     this.N = N;
     this.size = size;
-    this.nDims = N.length;
+    this.nDims = nDims;
 
     // compute the length of each cell in each axis
     this.len_cells = new Array();
-    for(var i=0; i<this.nDims; i++)
+    for(var i=0; i<this.size.length; i++)
         this.len_cells.push(this.size[i] / (this.N[i] + 2));
-
-    // Generates an empty 2D or 3D velocity array.
-    this.generateVelArray = function() {
-        var vel;
-        if(this.nDims == 2) // TODO - cleaner way of doing this for arbitrary dim?
-            vel = zeros3d(2, this.N[X_DIM]+2, this.N[Y_DIM]+2);
-        else
-            vel = zeros4d(3, this.N[X_DIM]+2, this.N[Y_DIM]+2, this.N[Z_DIM]+2);
-        return vel;
-    }
-
-    // Generates an empty 2D or 3D density array.
-    this.generateDensArray = function() {
-        var dens;
-        if(this.nDims == 2) // TODO - cleaner way of doing this for arbitrary dim?
-            dens = zeros2d(this.N[X_DIM]+2, this.N[Y_DIM]+2);
-        else
-            dens = zeros3d(this.N[X_DIM]+2, this.N[Y_DIM]+2, this.N[Z_DIM]+2);
-        return dens;
-    }
     
-    // allocate the velocity and density field arrays (2 or 3 dimensional)
-    this.vel = this.generateVelArray();
-    this.prev_vel = this.generateVelArray();
-    this.dens = this.generateDensArray();
-    this.prev_dens = this.generateDensArray();
+    // allocate the velocity and density field arrays (3rd dim ignored for 2D).
+    this.vel = zeros4d(3, this.N[X_DIM]+2, this.N[Y_DIM]+2, this.N[Z_DIM]+2);
+    this.prev_vel = zeros4d(3, this.N[X_DIM]+2, this.N[Y_DIM]+2, this.N[Z_DIM]+2);
+    this.dens = zeros3d(this.N[X_DIM]+2, this.N[Y_DIM]+2, this.N[Z_DIM]+2);
+    this.prev_dens = zeros3d(this.N[X_DIM]+2, this.N[Y_DIM]+2, this.N[Z_DIM]+2);
 
     // Clears out the prev value arrays.
     this.clearPrev = function() {
-        this.prev_vel = this.generateVelArray();
-        this.prev_dens = this.generateDensArray();
+        this.prev_vel = zeros4d(3, this.N[X_DIM]+2, this.N[Y_DIM]+2, this.N[Z_DIM]+2);
+        this.prev_dens = zeros3d(this.N[X_DIM]+2, this.N[Y_DIM]+2, this.N[Z_DIM]+2);
     }
 
     // Swaps the velocity array pointers (old and new).
@@ -82,7 +64,7 @@ function Grid(N, size) {
     this.registerClick = function(x, y) {
         var i = Math.floor(x / this.len_cells[X_DIM]);
         var j = Math.floor(y / this.len_cells[Y_DIM]);
-        this.dens[i][j] = 1;
+        this.dens[i][j][1] = 1;
     }
 
     // Renders this Grid using the given context.
@@ -103,7 +85,7 @@ function Grid(N, size) {
         // draw the densities
         for(var i=0; i<this.N[X_DIM]+2; i++) {
             for(var j=0; j<this.N[Y_DIM]+2; j++) {
-                var dens = this.dens[i][j];
+                var dens = this.dens[i][j][1];
                 if(dens > 0) {
                     var x = Math.floor(i * this.len_cells[X_DIM]);
                     var y = Math.floor(j * this.len_cells[Y_DIM]);
@@ -142,8 +124,8 @@ function Grid(N, size) {
                 for(var j=0; j<this.N[Y_DIM]+2; j++) {
                     var x = Math.floor(i * this.len_cells[X_DIM]);
                     var y = Math.floor(j * this.len_cells[Y_DIM]);
-                    var vX = this.vel[X_DIM][i][j];
-                    var vY = this.vel[Y_DIM][i][j];
+                    var vX = this.vel[X_DIM][i][j][1];
+                    var vY = this.vel[Y_DIM][i][j][1];
                     vX *= 100;
                     vY *= 100;
                     ctx.beginPath();
