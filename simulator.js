@@ -253,6 +253,8 @@ function Simulator(N, width, height, timeStep) {
     
     // Take one step in the simulation.
     this.step = function(ctx) {
+        if(!keep_prev)
+            this.grid.clearPrev();
         this.vStep();
         this.dStep();
         this.grid.render(ctx, show_grid, show_vels);
