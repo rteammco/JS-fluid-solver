@@ -38,7 +38,7 @@ function Simulator(ui) {
     // k is the diffusion constant (diff or visc, depending)
     // bMode is the boundary mode for setBoundary().
     this.diffuse = function(cur, prev, k, bMode) {
-        var a = this.timeStep * k * this.grid.N[X_DIM] * this.grid.N[Y_DIM];
+        //var a = this.timeStep * k * this.grid.N[X_DIM] * this.grid.N[Y_DIM];
         var a = this.timeStep * k * Math.sqrt(this.ui.width * this.ui.height);
         for(var iter=0; iter<this.ui.solver_iters; iter++) {
             for(var i=1; i<=this.grid.N[X_DIM]; i++) {
@@ -93,25 +93,19 @@ function Simulator(ui) {
 
     // Project step forces velocities to be mass-conserving.
     this.project = function(vel, buf) {
-        var Lx = 1.0 / this.ui.width;//(this.grid.N[X_DIM] * this.grid.len_cells[X_DIM]);
-        var Ly = 1.0 / this.ui.height;//(this.grid.N[Y_DIM] * this.grid.len_cells[Y_DIM]);
-        // TODO - what? fix! 1.0 / width? or what?
+        var Lx = 1.0 / this.ui.width;
+        var Ly = 1.0 / this.ui.height;
         var p = buf[X_DIM];
         var div = buf[Y_DIM];
-        
-        var h = -0.5 / Math.sqrt(this.ui.width*this.ui.height); // TODO what??
         for(var i=1; i<=this.grid.N[X_DIM]; i++) {
             for(var j=1; j<=this.grid.N[Y_DIM]; j++) {
-                //div[i][j][1] = -0.5*(Lx*(vel[X_DIM][i+1][j][1] - vel[X_DIM][i-1][j][1]) +
-                //                     Ly*(vel[Y_DIM][i][j+1][1] - vel[Y_DIM][i][j-1][1]));
-                div[i][j][1] = h*((vel[X_DIM][i+1][j][1] - vel[X_DIM][i-1][j][1]) +
-                                  (vel[Y_DIM][i][j+1][1] - vel[Y_DIM][i][j-1][1]));
+                div[i][j][1] = -0.5*(Lx*(vel[X_DIM][i+1][j][1] - vel[X_DIM][i-1][j][1]) +
+                                     Ly*(vel[Y_DIM][i][j+1][1] - vel[Y_DIM][i][j-1][1]));
                 p[i][j][1] = 0;
             }
         }
         this.setBoundary(div, BOUNDARY_MIRROR);
         this.setBoundary(p, BOUNDARY_MIRROR);
-
         // TODO - move to a separate function (shared w/ diffuse)
         for(var iter=0; iter<this.ui.solver_iters; iter++) {
             for(var i=1; i<=this.grid.N[X_DIM]; i++) {
@@ -124,7 +118,6 @@ function Simulator(ui) {
             }
             this.setBoundary(p, BOUNDARY_MIRROR);
         }
-
         for(var i=1; i<=this.grid.N[X_DIM]; i++) {
             for(var j=1; j<=this.grid.N[Y_DIM]; j++) {
                 vel[X_DIM][i][j][1] -= 0.5*(p[i+1][j][1] - p[i-1][j][1]) / Lx;
@@ -133,37 +126,6 @@ function Simulator(ui) {
         }
         this.setBoundary(vel[X_DIM], BOUNDARY_OPPOSE_X);
         this.setBoundary(vel[Y_DIM], BOUNDARY_OPPOSE_Y);
-
-        /*var u = vel[X_DIM];
-        var v = vel[Y_DIM];
-        var N = this.grid.N[X_DIM];
-        var h = 1.0/canvas.height;
-        for (var i=1; i<=N; i++) {
-            for (var j=1; j<=N; j++) {
-                div[i][j][1] = -0.5*h*(u[i+1][j][1]-u[i-1][j][1]+
-                                       v[i][j+1][1]-v[i][j-1][1]);
-                p[i][j][1] = 0;
-            }
-        }
-        this.setBoundary(div, 0);
-        this.setBoundary(p, 0);
-        for (var k=0; k<20; k++) {
-            for (var i=1; i<=N; i++) {
-                for (var j=1; j<=N; j++) {
-                    p[i][j][1] = (div[i][j][1]+p[i-1][j][1]+p[i+1][j][1]+
-                                         p[i][j-1][1]+p[i][j+1][1])/4;
-                }
-            }
-            this.setBoundary(p, 0);
-        }
-        for (var i=1; i<=N; i++) {
-            for (var j=1; j<=N; j++) {
-                u[i][j][1] -= 0.5*(p[i+1][j][1]-p[i-1][j][1])/h;
-                v[i][j][1] -= 0.5*(p[i][j+1][1]-p[i][j-1][1])/h;
-            }
-        }
-        this.setBoundary(u, 1);
-        this.setBoundary(v, 2);*/
     }
 
     // Sets the values of X on the boundary cells (inactive in the actual

@@ -34,8 +34,8 @@ function UI(canvas_id) {
         this.visc = 0.1;
         this.diff = 0.1;
         this.dT = 0.01;
-        this.grid_cols = 50;//Math.floor(this.width / 15);
-        this.grid_rows = 50;//Math.floor(this.height / 15);
+        this.grid_cols = Math.floor(this.width / 15);
+        this.grid_rows = Math.floor(this.height / 15);
         this.solver_iters = 20;
     }
     this.defaults();
