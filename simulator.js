@@ -41,6 +41,7 @@ function Simulator(ui) {
     // bMode is the boundary mode for setBoundary().
     this.diffuse = function(cur, prev, k, bMode) {
         var a = this.timeStep * k * this.grid.N[X_DIM] * this.grid.N[Y_DIM];
+        var a = this.timeStep * k * Math.sqrt(this.ui.width * this.ui.height);
         for(var iter=0; iter<N_SOLVER_ITERS; iter++) {
             for(var i=1; i<=this.grid.N[X_DIM]; i++) {
                 for(var j=1; j<=this.grid.N[Y_DIM]; j++) {
@@ -237,9 +238,9 @@ function Simulator(ui) {
         //if(keep_prev)
         this.addSource(this.grid.dens, this.grid.prev_dens);
         this.addSource(this.grid.dens, this.grid.src_dens);
-        //this.grid.swapD();
-        //this.diffuse(this.grid.dens, this.grid.prev_dens,
-        //             this.ui.diff, BOUNDARY_MIRROR);
+        this.grid.swapD();
+        this.diffuse(this.grid.dens, this.grid.prev_dens,
+                     this.ui.diff, BOUNDARY_MIRROR);
         this.grid.swapD();
         this.advect(this.grid.dens, this.grid.prev_dens,
                     this.grid.vel, BOUNDARY_MIRROR);
