@@ -237,9 +237,9 @@ function Simulator(ui) {
         //if(keep_prev)
         this.addSource(this.grid.dens, this.grid.prev_dens);
         this.addSource(this.grid.dens, this.grid.src_dens);
-        this.grid.swapD();
-        this.diffuse(this.grid.dens, this.grid.prev_dens,
-                     this.ui.diff, BOUNDARY_MIRROR);
+        //this.grid.swapD();
+        //this.diffuse(this.grid.dens, this.grid.prev_dens,
+        //             this.ui.diff, BOUNDARY_MIRROR);
         this.grid.swapD();
         this.advect(this.grid.dens, this.grid.prev_dens,
                     this.grid.vel, BOUNDARY_MIRROR);
@@ -249,15 +249,19 @@ function Simulator(ui) {
     // Take one step in the simulation.
     this.step = function(ctx) {
         //this.grid.clearCurrent();
+        this.grid.clearPrev();
         this.grid.clearSources();
         var src_point = this.ui.getSource();
         if(src_point) {
-            // TODO - change source types?
-            this.grid.addDensSource(src_point.x, src_point.y, 1);
+            var type = this.ui.getActionType();
+            if(type == ACT_DENSITY_DRAG)
+                this.grid.addDensSource(src_point.x, src_point.y, 1);
+            else if(type == ACT_VELOCITY_DRAG)
+                this.grid.addVelSource(src_point.x, src_point.y, 1);
         }
-        this.vStep();
+        //this.vStep();
         this.dStep();
-        this.grid.render(ctx, ui.show_grid, ui.show_vels);
+        this.grid.render(ui.ctx, ui.show_grid, ui.show_vels);
     }
 
     // Adds gravity to the simulation. Pass negative g-force value to

@@ -6,8 +6,9 @@
 
 // GUI constants
 ACT_DENSITY_DRAG = 0;
-ACT_DENSITY_SRC = 1;
-ACT_VELOCITY_SRC = 2;
+ACT_VELOCITY_DRAG = 1;
+ACT_DENSITY_SRC = 2;
+ACT_VELOCITY_SRC = 3;
 
 
 // UI Class: interfaces with the GUI.

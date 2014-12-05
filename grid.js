@@ -187,11 +187,11 @@ function Grid(N, size, nDims) {
         ctx.clearRect(0, 0, this.size[X_DIM], this.size[Y_DIM]);
         ctx.save();
         // draw the densities
-        var avg_dens = 0;
+        var total_dens = 0;
         for(var i=0; i<this.N[X_DIM]+2; i++) {
             for(var j=0; j<this.N[Y_DIM]+2; j++) {
                 var dens = this.dens[i][j][1];
-                avg_dens += dens;
+                total_dens += dens;
                 if(dens > 0) {
                     var x = Math.floor(i * this.len_cells[X_DIM]);
                     var y = Math.floor(j * this.len_cells[Y_DIM]);
@@ -251,7 +251,6 @@ function Grid(N, size, nDims) {
         // Display tooltips
         ctx.fillStyle = "#00FF00";
         ctx.font = "16px Ariel";
-        avg_dens = avg_dens / (52*52);
-        ctx.fillText("Average Density: " + avg_dens, 10, 30);
+        ctx.fillText("Total System Density: " + total_dens, 10, 30);
     }
 }
