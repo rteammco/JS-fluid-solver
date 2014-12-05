@@ -24,12 +24,6 @@ function Simulator(ui) {
     this.grid = new Grid([this.ui.grid_div, this.ui.grid_div, 1],
                          [this.ui.width, this.ui.height, 0], 2);
 
-    // velocity and denisty source arrays
-    this.v_src = zeros4d(3, this.grid.N[X_DIM]+2, this.grid.N[Y_DIM]+2,
-                            this.grid.N[Z_DIM]+2);
-    this.d_src = zeros3d(this.grid.N[X_DIM]+2, this.grid.N[Y_DIM]+2,
-                         this.grid.N[Z_DIM]+2);
-
     // To each element of array dest adds the respective element of the
     // source (also an array) multiplied by the time step.
     // Use to add source arrays for velocity and density.
@@ -223,7 +217,7 @@ function Simulator(ui) {
         for(var dim=0; dim<N_DIMS; dim++) {
             //if(keep_prev)
             this.addSource(this.grid.vel[dim], this.grid.prev_vel[dim]);
-            this.addSource(this.grid.vel[dim], this.v_src[dim]);
+            this.addSource(this.grid.vel[dim], this.grid.src_vel[dim]);
         }
         this.grid.swapV();
 
@@ -242,7 +236,7 @@ function Simulator(ui) {
     this.dStep = function() {
         //if(keep_prev)
         this.addSource(this.grid.dens, this.grid.prev_dens);
-        this.addSource(this.grid.dens, this.d_src);
+        this.addSource(this.grid.dens, this.grid.src_dens);
         this.grid.swapD();
         this.diffuse(this.grid.dens, this.grid.prev_dens,
                      this.ui.diff, BOUNDARY_MIRROR);
@@ -254,15 +248,13 @@ function Simulator(ui) {
     
     // Take one step in the simulation.
     this.step = function(ctx) {
-        this.grid.clearCurrent();
-        //this.ui.query(this.grid.prev_vel, this.grid.prev_dens);
-        var src = this.ui.getSource();
-        if(src) {
-            var idx = this.grid.getContainerCell(src.x, src.y, 0);
-            this.grid.prev_dens[idx.i][idx.j][1] = 1;
+        //this.grid.clearCurrent();
+        this.grid.clearSources();
+        var src_point = this.ui.getSource();
+        if(src_point) {
+            // TODO - change source types?
+            this.grid.addDensSource(src_point.x, src_point.y, 1);
         }
-        //if(!keep_prev)
-        //    this.grid.clearPrev();
         this.vStep();
         this.dStep();
         this.grid.render(ctx, ui.show_grid, ui.show_vels);
@@ -275,28 +267,6 @@ function Simulator(ui) {
         for(var i=0; i<this.grid.N[X_DIM]+2; i++)
             for(var j=0; j<this.grid.N[Y_DIM]+2; j++)
                 for(var k=0; k<this.grid.N[Z_DIM]+2; k++)
-                    this.v_src[Y_DIM][i][j][k] = g;
-    }
-
-    // When the user clicks, interface with the stuff.
-    this.insertDensity = function(x, y, val) {
-        //var idx = this.grid.getContainerCell(x, y, 0);
-        //this.d_src[idx.i][idx.j][1] = val;
-        this.grid.registerClick(x, y, val);
-    }
-
-    // Adds a density source to the simulation which will generate the given
-    // amount of density each time step.
-    this.addDensSource = function(x, y, val) {
-        // TODO - scale val by timestep?
-        var idx = this.grid.getContainerCell(x, y, 0);
-        this.d_src[idx.i][idx.j][1] = val;
-    }
-
-    // Adds a velocity source to the simulation in the specified direction.
-    this.addVelSource = function(x, y, vX, vY) {
-        var idx = this.grid.getContainerCell(x, y);
-        this.v_src[X_DIM][idx.i][idx.j][1] = vX;
-        this.v_src[Y_DIM][idx.i][idx.j][1] = vY;
+                    this.grid.src_vel[Y_DIM][i][j][k] = g;
     }
 }

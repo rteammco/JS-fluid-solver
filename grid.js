@@ -32,37 +32,68 @@ function Grid(N, size, nDims) {
     this.len_cells = new Array();
     for(var i=0; i<this.size.length; i++)
         this.len_cells.push(this.size[i] / (this.N[i] + 2));
+
+    // Generates a velocity array appropriately fitted to this grid.
+    this.generateVelArray = function() {
+        return zeros4d(3, this.N[X_DIM]+2, this.N[Y_DIM]+2, this.N[Z_DIM]+2);
+    }
+
+    // Generates a density array appropriately fitted to this grid.
+    this.generateDensArray = function() {
+        return zeros3d(this.N[X_DIM]+2, this.N[Y_DIM]+2, this.N[Z_DIM]+2);
+    }
     
     // allocate the velocity and density field arrays (3rd dim ignored for 2D).
-    this.vel = zeros4d(3, this.N[X_DIM]+2, this.N[Y_DIM]+2, this.N[Z_DIM]+2);
-    this.prev_vel = zeros4d(3, this.N[X_DIM]+2, this.N[Y_DIM]+2, this.N[Z_DIM]+2);
-    this.dens = zeros3d(this.N[X_DIM]+2, this.N[Y_DIM]+2, this.N[Z_DIM]+2);
-    this.prev_dens = zeros3d(this.N[X_DIM]+2, this.N[Y_DIM]+2, this.N[Z_DIM]+2);
+    this.vel = this.generateVelArray();
+    this.prev_vel = this.generateVelArray();
+    this.src_vel = this.generateVelArray();
+    this.dens = this.generateDensArray();
+    this.prev_dens = this.generateDensArray();
+    this.src_dens = this.generateDensArray();
 
-    // Clears out the current data arrays.
-    this.clearCurrent = function() {
+    // Zeros out the given velocity and density arrays.
+    this.clearArrays = function(v, d) {
         for(var i=0; i<(this.N[X_DIM]+2); i++) {
             for(var j=0; j<(this.N[X_DIM]+2); j++) {
                 for(var k=0; k<(this.N[X_DIM]+2); k++) {
                     for(var dim=0; dim<3; dim++)
-                        this.vel[dim][i][j][k] = 0;
-                    this.dens[i][j][k] = 0;
+                        v[dim][i][j][k] = 0;
+                    d[i][j][k] = 0;
                 }
             }
         }
     }
 
+    // Clears out the source arrays.
+    this.clearSources = function() {
+        this.clearArrays(this.src_vel, this.src_dens);
+    }
+
+    // Clears out the current data arrays.
+    this.clearCurrent = function() {
+        this.clearArrays(this.vel, this.dens);
+    }
+
     // Clears out the previous data arrays (non-conserving).
     this.clearPrev = function() {
-        for(var i=0; i<(this.N[X_DIM]+2); i++) {
-            for(var j=0; j<(this.N[X_DIM]+2); j++) {
-                for(var k=0; k<(this.N[X_DIM]+2); k++) {
-                    for(var dim=0; dim<3; dim++)
-                        this.prev_vel[dim][i][j][k] = 0;
-                    this.prev_dens[i][j][k] = 0;
-                }
-            }
-        }
+        this.clearArrays(this.prev_vel, this.prev_dens);
+    }
+
+    // Adds a source to the velocity source array in the given direction.
+    // x, y location is absolute, and the appropriate cell is determined.
+    // TODO - z-axis?
+    this.addVelSource = function(x, y, vX, vY) {
+        var idx = this.getContainerCell(x, y);
+        this.src_vel[X_DIM][idx.i][idx.j][1] = vX;
+        this.src_vel[Y_DIM][idx.i][idx.j][1] = vY;
+    }
+
+    // Adds a source to the density source array of the given value d.
+    // x, y location is absolute, and the appropriate cell is determined.
+    // TODO - z-axis?
+    this.addDensSource = function(x, y, d) {
+        var idx = this.getContainerCell(x, y);
+        this.src_dens[idx.i][idx.j][1] = d;
     }
 
     // Swaps the velocity array pointers (old and new).
@@ -156,19 +187,22 @@ function Grid(N, size, nDims) {
         ctx.clearRect(0, 0, this.size[X_DIM], this.size[Y_DIM]);
         ctx.save();
         // draw the densities
+        var avg_dens = 0;
         for(var i=0; i<this.N[X_DIM]+2; i++) {
             for(var j=0; j<this.N[Y_DIM]+2; j++) {
                 var dens = this.dens[i][j][1];
+                avg_dens += dens;
                 if(dens > 0) {
                     var x = Math.floor(i * this.len_cells[X_DIM]);
                     var y = Math.floor(j * this.len_cells[Y_DIM]);
                     // TODO - changed for visualization
+                    var real_dens = dens;
                     dens *= 1000;
                     ctx.fillStyle = "rgba(" + GRID_DENSITY_COLOR + ", " + dens + ")";
-                    if(dens >= 1) {
+                    if(dens >= 1)
                         dens = 1;
+                    if(real_dens >= 1)
                         ctx.fillStyle = "#FF0000";
-                    }
                     ctx.fillRect(x, y, this.len_cells[X_DIM], this.len_cells[Y_DIM]);
                 }
             }
@@ -214,5 +248,10 @@ function Grid(N, size, nDims) {
             }
         }
         ctx.restore();
+        // Display tooltips
+        ctx.fillStyle = "#00FF00";
+        ctx.font = "16px Ariel";
+        avg_dens = avg_dens / (52*52);
+        ctx.fillText("Average Density: " + avg_dens, 10, 30);
     }
 }

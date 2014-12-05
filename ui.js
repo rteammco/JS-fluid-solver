@@ -16,7 +16,10 @@ function UI(canvas_id) {
     this.ctx = this.canvas.getContext("2d");
     this.width = this.canvas.width;
     this.height = this.canvas.height;
+
+    // mouse action variables
     this.mouse_dragging = false;
+    this.action_type = ACT_DENSITY_DRAG;
     
     // Getters:
     this.getContext = function() {
@@ -45,10 +48,27 @@ function UI(canvas_id) {
         document.getElementById("vel_x").value = this.vel_x;
         document.getElementById("vel_y").value = this.vel_y;
         document.getElementById("grid_size").value = this.grid_div;
-
-        //document.getElementById("action_dens_drag").checked = true;
-        //document.getElementById("action_dens_src").checked = false;
-        //document.getElementById("action_vel_src").checked = false;
+        var dens_drag_box = document.getElementById("action_dens_drag");
+        var dens_src_box = document.getElementById("action_dens_src");
+        var vel_src_box = document.getElementById("action_vel_src");
+        switch(this.action_type) {
+            case ACT_DENSITY_SRC:
+                dens_drag_box.checked = false;
+                dens_src_box.checked = true;
+                vel_src_box.checked = false;
+                break;
+            case ACT_VELOCITY_SRC:
+                dens_drag_box.checked = false;
+                dens_src_box.checked = false;
+                vel_src_box.checked = true;
+                break;
+            case ACT_DENSITY_DRAG:
+            default:
+                dens_drag_box.checked = true;
+                dens_src_box.checked = false;
+                vel_src_box.checked = false;
+                break;
+        }
         //document.getElementById("keep_prev").checked = false;
     }
     this.setUI();
@@ -62,11 +82,11 @@ function UI(canvas_id) {
         this.vel_x = parseFloat(document.getElementById("vel_x").value);
         this.vel_y = parseFloat(document.getElementById("vel_y").value);
         this.grid_div = parseInt(document.getElementById("grid_size").value);
-        /*action = ACT_DENSITY_DRAG;
+        this.action_type = ACT_DENSITY_DRAG;
         if(document.getElementById("action_dens_src").checked)
-            action = ACT_DENSITY_SRC;
+            this.action_type = ACT_DENSITY_SRC;
         else if(document.getElementById("action_vel_src").checked)
-            action = ACT_VELOCITY_SRC;*/
+            this.action_type = ACT_VELOCITY_SRC;
         //keep_prev = document.getElementById("keep_prev").checked;
     }
 
@@ -107,16 +127,17 @@ function UI(canvas_id) {
         this.source = this.getPositionOnCanvas(event);
     }
 
-    // Returns the source.
+    // If there is a source from user action, returns that x, y location.
+    // Otherwise, returns null if user is not doing anything.
     this.getSource = function() {
         if(this.mouse_dragging)
             return this.source;
         else
             return null;
     }
-    // Fills in the velocity array v and density array d with the
-    // appropriate values based on the current user interaction.
-    this.query = function(v, d) {
-        ;
+
+    // Returns the mouse action type that the GUI is currently set to.
+    this.getActionType = function() {
+        return this.action_type;
     }
 }
