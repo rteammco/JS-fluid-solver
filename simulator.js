@@ -257,9 +257,9 @@ function Simulator(ui) {
             if(type == ACT_DENSITY_DRAG)
                 this.grid.addDensSource(src_point.x, src_point.y, 1);
             else if(type == ACT_VELOCITY_DRAG)
-                this.grid.addVelSource(src_point.x, src_point.y, 1);
+                this.grid.addVelSource(src_point.x, src_point.y, 500, 0);
         }
-        //this.vStep();
+        this.vStep();
         this.dStep();
         this.grid.render(ui.ctx, ui.show_grid, ui.show_vels);
     }
