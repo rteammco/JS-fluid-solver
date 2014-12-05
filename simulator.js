@@ -220,7 +220,8 @@ function Simulator(N, width, height, timeStep) {
     // Does one velocity field update.
     this.vStep = function() {
         for(var dim=0; dim<N_DIMS; dim++) {
-            this.addSource(this.grid.vel[dim], this.grid.prev_vel[dim]);
+            if(keep_prev)
+                this.addSource(this.grid.vel[dim], this.grid.prev_vel[dim]);
             this.addSource(this.grid.vel[dim], this.v_src[dim]);
         }
         this.grid.swapV();
@@ -238,7 +239,8 @@ function Simulator(N, width, height, timeStep) {
 
     // Does one scalar field update.
     this.dStep = function() {
-        this.addSource(this.grid.dens, this.grid.prev_dens);
+        if(keep_prev)
+            this.addSource(this.grid.dens, this.grid.prev_dens);
         this.addSource(this.grid.dens, this.d_src);
         this.grid.swapD();
         this.diffuse(this.grid.dens, this.grid.prev_dens,
@@ -251,8 +253,6 @@ function Simulator(N, width, height, timeStep) {
     
     // Take one step in the simulation.
     this.step = function(ctx) {
-        if(!keep_prev)
-            this.grid.clearPrev();
         this.vStep();
         this.dStep();
         this.grid.render(ctx, show_grid, show_vels);

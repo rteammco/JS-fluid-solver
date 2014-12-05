@@ -39,12 +39,6 @@ function Grid(N, size, nDims) {
     this.dens = zeros3d(this.N[X_DIM]+2, this.N[Y_DIM]+2, this.N[Z_DIM]+2);
     this.prev_dens = zeros3d(this.N[X_DIM]+2, this.N[Y_DIM]+2, this.N[Z_DIM]+2);
 
-    // Clears out the prev value arrays.
-    this.clearPrev = function() {
-        this.prev_vel = zeros4d(3, this.N[X_DIM]+2, this.N[Y_DIM]+2, this.N[Z_DIM]+2);
-        this.prev_dens = zeros3d(this.N[X_DIM]+2, this.N[Y_DIM]+2, this.N[Z_DIM]+2);
-    }
-
     // Swaps the velocity array pointers (old and new).
     this.swapV = function() {
         var temp = this.vel;
