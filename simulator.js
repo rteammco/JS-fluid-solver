@@ -254,8 +254,13 @@ function Simulator(ui) {
     
     // Take one step in the simulation.
     this.step = function(ctx) {
-        this.ui.query(this.grid.prev_vel, this.grid.prev_dens);
         this.grid.clearCurrent();
+        //this.ui.query(this.grid.prev_vel, this.grid.prev_dens);
+        var src = this.ui.getSource();
+        if(src) {
+            var idx = this.grid.getContainerCell(src.x, src.y, 0);
+            this.grid.prev_dens[idx.i][idx.j][1] = 1;
+        }
         //if(!keep_prev)
         //    this.grid.clearPrev();
         this.vStep();

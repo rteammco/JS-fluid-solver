@@ -16,6 +16,7 @@ function UI(canvas_id) {
     this.ctx = this.canvas.getContext("2d");
     this.width = this.canvas.width;
     this.height = this.canvas.height;
+    this.mouse_dragging = false;
     
     // Getters:
     this.getContext = function() {
@@ -69,6 +70,50 @@ function UI(canvas_id) {
         //keep_prev = document.getElementById("keep_prev").checked;
     }
 
+    // Set up listeners for mouse events.
+    this.canvas.onmousedown = function(event) {
+        ui.mousedown(event);
+    }
+    document.onmouseup = function(event) {
+        ui.mouseup(event);
+    }
+    this.canvas.onmousemove = function(event) {
+        ui.mousemove(event);
+    }
+
+    // Returns the x, y position on the canvas given the JavaScript event
+    // containing an absolute window position.
+    this.getPositionOnCanvas = function(event) {
+        var x = Math.floor(event.pageX - $(this.canvas).position().left);
+        var y = Math.floor(event.pageY - $(this.canvas).position().top);
+        return {x:x, y:y};
+    }
+
+    // When the user clicks down the mouse, dragging starts.
+    this.mousedown = function(event) {
+        this.mouse_dragging = true;
+        this.mousemove(event);
+    }
+
+    // When the user lifts the mouse, dragging ends.
+    this.mouseup = function(event) {
+        this.mouse_dragging = false;
+    }
+
+    // When the mouse moves, apply the appropriate source.
+    this.mousemove = function(event) {
+        if(!this.mouse_dragging)
+            return;
+        this.source = this.getPositionOnCanvas(event);
+    }
+
+    // Returns the source.
+    this.getSource = function() {
+        if(this.mouse_dragging)
+            return this.source;
+        else
+            return null;
+    }
     // Fills in the velocity array v and density array d with the
     // appropriate values based on the current user interaction.
     this.query = function(v, d) {
