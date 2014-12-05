@@ -214,11 +214,14 @@ function Simulator(ui) {
         this.grid.clearSources();
         var src_point = this.ui.getSource();
         if(src_point) {
-            var type = this.ui.getActionType();
-            if(type == ACT_DENSITY_DRAG)
+            if(this.ui.getActionType() == ACT_DENSITY_SRC)
                 this.grid.addDensSource(src_point.x, src_point.y, 1);
-            else if(type == ACT_VELOCITY_DRAG)
-                this.grid.addVelSource(src_point.x, src_point.y, 500, 0);
+            else {
+                // TODO - get velocity from UI
+                var vX = 500;
+                var vY = 0;
+                this.grid.addVelSource(src_point.x, src_point.y, vX, vY);
+            }
         }
         this.vStep();
         this.dStep();

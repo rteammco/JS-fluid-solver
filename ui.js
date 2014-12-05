@@ -5,9 +5,8 @@
 
 
 // GUI constants
-ACT_DENSITY_DRAG = 0;
-ACT_VELOCITY_DRAG = 1;
-ACT_DENSITY_SRC = 2;
+ACT_DENSITY_SRC = 0;
+ACT_VELOCITY_SRC = 1;
 
 
 // UI Class: interfaces with the GUI.
@@ -27,7 +26,7 @@ function UI(canvas_id) {
 
     // UI constants (call defaults() to change to default).
     this.defaults = function() {
-        this.action_type = ACT_DENSITY_DRAG;
+        this.action_type = ACT_DENSITY_SRC;
         this.show_grid = false;
         this.show_vels = false;
         this.show_stats = false;
@@ -52,25 +51,14 @@ function UI(canvas_id) {
         document.getElementById("grid_rows").value = this.grid_rows;
         document.getElementById("solver_iters").value = this.solver_iters;
         var dens_drag_box = document.getElementById("action_dens_drag");
-        var dens_src_box = document.getElementById("action_dens_src");
         var vel_drag_box = document.getElementById("action_vel_drag");
-        switch(this.action_type) {
-            case ACT_DENSITY_SRC:
-                dens_drag_box.checked = false;
-                dens_src_box.checked = true;
-                vel_drag_box.checked = false;
-                break;
-            case ACT_VELOCITY_DRAG:
-                dens_drag_box.checked = false;
-                dens_src_box.checked = false;
-                vel_drag_box.checked = true;
-                break;
-            case ACT_DENSITY_DRAG:
-            default:
-                dens_drag_box.checked = true;
-                dens_src_box.checked = false;
-                vel_drag_box.checked = false;
-                break;
+        if(this.action_type == ACT_DENSITY_SRC) {
+            dens_drag_box.checked = true;
+            vel_drag_box.checked = false;
+        }
+        else {
+            dens_drag_box.checked = false;
+            vel_drag_box.checked = true;
         }
     }
     this.setUI();
@@ -86,11 +74,9 @@ function UI(canvas_id) {
         this.grid_cols = parseInt(document.getElementById("grid_cols").value);
         this.grid_rows = parseInt(document.getElementById("grid_rows").value);
         this.solver_iters = parseInt(document.getElementById("solver_iters").value);
-        this.action_type = ACT_DENSITY_DRAG;
-        if(document.getElementById("action_dens_src").checked)
-            this.action_type = ACT_DENSITY_SRC;
-        else if(document.getElementById("action_vel_drag").checked)
-            this.action_type = ACT_VELOCITY_DRAG;
+        this.action_type = ACT_DENSITY_SRC;
+        if(document.getElementById("action_vel_drag").checked)
+            this.action_type = ACT_VELOCITY_SRC;
     }
 
     // Set up listeners for mouse events.
