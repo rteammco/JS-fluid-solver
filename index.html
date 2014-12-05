@@ -28,41 +28,6 @@
     </canvas></p>
 
     <p>
-        Show Grid:
-        <input type="checkbox" id="show_grid" onchange="setParamsFromUI();" />
-        &nbsp;&nbsp;&nbsp;&nbsp;
-        Show Velocities:
-        <input type="checkbox" id="show_vels" onchange="setParamsFromUI();" />
-        &nbsp;&nbsp;&nbsp;&nbsp;
-        Keep Prev Values:
-        <input type="checkbox" id="keep_prev" onchange="setParamsFromUI();" />
-        &nbsp;&nbsp;&nbsp;&nbsp;
-        Viscosity:
-        <input type="text" id="visc_val" onchange="setParamsFromUI();" />
-        &nbsp;&nbsp;&nbsp;&nbsp;
-        Diffusion:
-        <input type="text" id="diff_val" onchange="setParamsFromUI();" />
-    </p>
-    <p>
-        Mouse Action:
-    </p>
-    <p>
-        Add Density:
-        <input type="radio" name="act_select" id="action_dens_drag" onchange="setParamsFromUI();">
-        &nbsp;&nbsp;&nbsp;&nbsp;
-        Add Density Source:
-        <input type="radio" name="act_select" id="action_dens_src" onchange="setParamsFromUI();">
-        &nbsp;&nbsp;&nbsp;&nbsp;
-        Add Velocity Source:
-        <input type="radio" name="act_select" id="action_vel_drag" onchange="setParamsFromUI();">
-        &nbsp;&nbsp;&nbsp;&nbsp;
-        Velocity X:
-        <input type="text" id="vel_x" onchange="setParamsFromUI();" />
-        &nbsp;&nbsp;&nbsp;&nbsp;
-        Velocity Y:
-        <input type="text" id="vel_y" onchange="setParamsFromUI();" />
-    </p>
-    <p>
         <button onclick="resetSim();">Reset Simulation</button>
         &nbsp;&nbsp;&nbsp;&nbsp;
         <button onclick="resetGUIParams();">Reset Parameters</button>
@@ -70,8 +35,48 @@
         <button onclick="addGravityToSim();">+ Gravity</button>
     </p>
     <p>
-        Grid Size (N):
-        <input type="text" id="grid_size" onchange="setParamsFromUI();" />
+        <b>Mouse Action:</b>
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        Add Density:
+        <input type="radio" name="act_select" id="action_dens_drag" onchange="setParamsFromUI();">
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        Add Density Source:
+        <input type="radio" name="act_select" id="action_dens_src" onchange="setParamsFromUI();">
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        Add Velocity:
+        <input type="radio" name="act_select" id="action_vel_drag" onchange="setParamsFromUI();">
+    </p>
+    <p>
+        Show Grid:
+        <input type="checkbox" id="show_grid" onchange="setParamsFromUI();" />
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        Show Velocities:
+        <input type="checkbox" id="show_vels" onchange="setParamsFromUI();" />
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        Show Stats:
+        <input type="checkbox" id="show_stats" onchange="setParamsFromUI();" />
+    </p>
+    <p>
+        Viscosity:
+        <input type="text" id="visc_val" onchange="setParamsFromUI();" />
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        Diffusion:
+        <input type="text" id="diff_val" onchange="setParamsFromUI();" />
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        Time Step:
+        <input type="text" id="time_step" onchange="setParamsFromUI();" />
+    </p>
+    <p>
+        Grid Cols (X):
+        <input type="text" id="grid_cols" onchange="setParamsFromUI();" />
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        Grid Rows (Y):
+        <input type="text" id="grid_rows" onchange="setParamsFromUI();" />
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        Num Solver Iterations:
+        <input type="text" id="solver_iters" onchange="setParamsFromUI();" />
+    </p>
     <p>
     	The simulation source code can be viewed <a href="fluids.js">here</a>.
     </p>

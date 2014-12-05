@@ -19,7 +19,6 @@ function UI(canvas_id) {
 
     // mouse action variables
     this.mouse_dragging = false;
-    this.action_type = ACT_DENSITY_DRAG;
     
     // Getters:
     this.getContext = function() {
@@ -28,14 +27,16 @@ function UI(canvas_id) {
 
     // UI constants (call defaults() to change to default).
     this.defaults = function() {
+        this.action_type = ACT_DENSITY_DRAG;
+        this.show_grid = false;
+        this.show_vels = false;
+        this.show_stats = false;
         this.visc = 0.1;
         this.diff = 0.1;
         this.dT = 0.01;
-        this.grid_div = 50;
-        this.show_grid = false;
-        this.show_vels = false;
-        this.vel_x = 500;
-        this.vel_y = 0;
+        this.grid_cols = 50;//Math.floor(this.width / 15);
+        this.grid_rows = 50;//Math.floor(this.height / 15);
+        this.solver_iters = 20;
     }
     this.defaults();
 
@@ -43,11 +44,13 @@ function UI(canvas_id) {
     this.setUI = function() {
         document.getElementById("show_grid").checked = this.show_grid;
         document.getElementById("show_vels").checked = this.show_vels;
+        document.getElementById("show_stats").checked = this.show_stats;
         document.getElementById("visc_val").value = this.visc;
         document.getElementById("diff_val").value = this.diff;
-        document.getElementById("vel_x").value = this.vel_x;
-        document.getElementById("vel_y").value = this.vel_y;
-        document.getElementById("grid_size").value = this.grid_div;
+        document.getElementById("time_step").value = this.dT;
+        document.getElementById("grid_cols").value = this.grid_cols;
+        document.getElementById("grid_rows").value = this.grid_rows;
+        document.getElementById("solver_iters").value = this.solver_iters;
         var dens_drag_box = document.getElementById("action_dens_drag");
         var dens_src_box = document.getElementById("action_dens_src");
         var vel_drag_box = document.getElementById("action_vel_drag");
@@ -69,7 +72,6 @@ function UI(canvas_id) {
                 vel_drag_box.checked = false;
                 break;
         }
-        //document.getElementById("keep_prev").checked = false;
     }
     this.setUI();
 
@@ -77,17 +79,18 @@ function UI(canvas_id) {
     this.readUI = function() {
         this.show_grid = document.getElementById("show_grid").checked;
         this.show_vels = document.getElementById("show_vels").checked;
+        this.show_stats = document.getElementById("show_stats").checked;
         this.visc = parseFloat(document.getElementById("visc_val").value);
         this.diff = parseFloat(document.getElementById("diff_val").value);
-        this.vel_x = parseFloat(document.getElementById("vel_x").value);
-        this.vel_y = parseFloat(document.getElementById("vel_y").value);
-        this.grid_div = parseInt(document.getElementById("grid_size").value);
+        this.dT = parseFloat(document.getElementById("time_step").value);
+        this.grid_cols = parseInt(document.getElementById("grid_cols").value);
+        this.grid_rows = parseInt(document.getElementById("grid_rows").value);
+        this.solver_iters = parseInt(document.getElementById("solver_iters").value);
         this.action_type = ACT_DENSITY_DRAG;
         if(document.getElementById("action_dens_src").checked)
             this.action_type = ACT_DENSITY_SRC;
         else if(document.getElementById("action_vel_drag").checked)
             this.action_type = ACT_VELOCITY_DRAG;
-        //keep_prev = document.getElementById("keep_prev").checked;
     }
 
     // Set up listeners for mouse events.

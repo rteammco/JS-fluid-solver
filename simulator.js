@@ -4,8 +4,6 @@
  */
 
 
-N_SOLVER_ITERS = 20;
-
 BOUNDARY_MIRROR = 0;
 BOUNDARY_OPPOSE_X = 1;
 BOUNDARY_OPPOSE_Y = 2;
@@ -21,8 +19,8 @@ function Simulator(ui) {
     this.ui = ui;
     this.timeStep = this.ui.dT;
     // TODO - change ui.___ to getter functions.
-    this.grid = new Grid([this.ui.grid_div, this.ui.grid_div, 1],
-                         [this.ui.width, this.ui.height, 0], 2);
+    this.grid = new Grid([this.ui.grid_cols, this.ui.grid_rows, 1],
+                         [this.ui.width, this.ui.height, 0], 2, ui);
 
     // To each element of array dest adds the respective element of the
     // source (also an array) multiplied by the time step.
@@ -42,7 +40,7 @@ function Simulator(ui) {
     this.diffuse = function(cur, prev, k, bMode) {
         var a = this.timeStep * k * this.grid.N[X_DIM] * this.grid.N[Y_DIM];
         var a = this.timeStep * k * Math.sqrt(this.ui.width * this.ui.height);
-        for(var iter=0; iter<N_SOLVER_ITERS; iter++) {
+        for(var iter=0; iter<this.ui.solver_iters; iter++) {
             for(var i=1; i<=this.grid.N[X_DIM]; i++) {
                 for(var j=1; j<=this.grid.N[Y_DIM]; j++) {
                     cur[i][j][1] = (prev[i][j][1]
@@ -115,7 +113,7 @@ function Simulator(ui) {
         this.setBoundary(p, BOUNDARY_MIRROR);
 
         // TODO - move to a separate function (shared w/ diffuse)
-        for(var iter=0; iter<N_SOLVER_ITERS; iter++) {
+        for(var iter=0; iter<this.ui.solver_iters; iter++) {
             for(var i=1; i<=this.grid.N[X_DIM]; i++) {
                 for(var j=1; j<=this.grid.N[Y_DIM]; j++) {
                     p[i][j][1] = (div[i][j][1]

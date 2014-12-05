@@ -8,6 +8,7 @@
 GRID_COLOR = "#555555";
 GRID_DENSITY_COLOR = "0, 0, 255";
 GRID_VELOCITY_COLOR = "yellow";
+GRID_TEXT_COLOR = "#00FF00";
 GRID_LINE_WIDTH = 1;
 
 
@@ -21,12 +22,14 @@ GRID_LINE_WIDTH = 1;
  *     size = array with the size of each dimension (widht, height, depth).
  *         for 2D, set this to 0.
  *     nDims = the number of dimensions (2 or 3).
+ *     ui = the UI object (used for rendering).
  */
-function Grid(N, size, nDims) {
+function Grid(N, size, nDims, ui) {
     // set the number of cells in each axis
     this.N = N;
     this.size = size;
     this.nDims = nDims;
+    this.ui = ui;
 
     // compute the length of each cell in each axis
     this.len_cells = new Array();
@@ -54,8 +57,8 @@ function Grid(N, size, nDims) {
     // Zeros out the given velocity and density arrays.
     this.clearArrays = function(v, d) {
         for(var i=0; i<(this.N[X_DIM]+2); i++) {
-            for(var j=0; j<(this.N[X_DIM]+2); j++) {
-                for(var k=0; k<(this.N[X_DIM]+2); k++) {
+            for(var j=0; j<(this.N[Y_DIM]+2); j++) {
+                for(var k=0; k<(this.N[Z_DIM]+2); k++) {
                     for(var dim=0; dim<3; dim++)
                         v[dim][i][j][k] = 0;
                     d[i][j][k] = 0;
@@ -172,18 +175,16 @@ function Grid(N, size, nDims) {
     }
 
     // Renders this Grid using the given context.
-    // Set flags show_grid to true to also render the grid itself,
-    //  and show_vel to true to render the velocity vectors.
     // Render method is changed depending on Grid dimension.
-    this.render = function(ctx, show_grid, show_vels) {
+    this.render = function(ctx) {
         if(this.nDims == 2)
-            this.render2D(ctx, show_grid, show_vels);
+            this.render2D(ctx);
         else
             alert("Dimension not supported.");
     }
 
     // Render a 2D representation of this Grid. Only works for 2D setup.
-    this.render2D = function(ctx, show_grid, show_vels) {
+    this.render2D = function(ctx) {
         ctx.clearRect(0, 0, this.size[X_DIM], this.size[Y_DIM]);
         ctx.save();
         // draw the densities
@@ -208,7 +209,7 @@ function Grid(N, size, nDims) {
             }
         }
         // if option is enabled, draw the grid
-        if(show_grid) {
+        if(this.ui.show_grid) {
             ctx.strokeStyle = GRID_COLOR;
             ctx.lineWidth = GRID_LINE_WIDTH;
             // draw the x axis lines
@@ -216,7 +217,7 @@ function Grid(N, size, nDims) {
                 ctx.beginPath();
                 var x = Math.floor(i * this.len_cells[X_DIM]);
                 ctx.moveTo(x, 0);
-                ctx.lineTo(x, ui.canvas.height); // TODO - no global var!
+                ctx.lineTo(x, this.ui.height);
                 ctx.stroke();
             }
             // draw the y axis lines
@@ -224,12 +225,12 @@ function Grid(N, size, nDims) {
                 ctx.beginPath();
                 var y = Math.floor(i * this.len_cells[Y_DIM]);
                 ctx.moveTo(0, y);
-                ctx.lineTo(ui.canvas.width, y); // TODO - no global var!
+                ctx.lineTo(this.ui.width, y);
                 ctx.stroke();
             }
         }
         // if option is enabled, draw the velocity vectors
-        if(show_vels) {
+        if(this.ui.show_vels) {
             ctx.strokeStyle = GRID_VELOCITY_COLOR;
             ctx.lineWidth = GRID_LINE_WIDTH;
             for(var i=0; i<this.N[X_DIM]+2; i++) {
@@ -247,10 +248,13 @@ function Grid(N, size, nDims) {
                 }
             }
         }
-        ctx.restore();
         // Display tooltips
-        ctx.fillStyle = "#00FF00";
-        ctx.font = "16px Ariel";
-        ctx.fillText("Total System Density: " + total_dens, 10, 30);
+        if(this.ui.show_stats) {
+            ctx.fillStyle = GRID_TEXT_COLOR;
+            ctx.font = "16px Ariel";
+            total_dens = Math.round(10000*total_dens)/10000;
+            ctx.fillText("Total System Density: " + total_dens, 10, 30);
+        }
+        ctx.restore();
     }
 }
