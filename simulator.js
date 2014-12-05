@@ -14,14 +14,15 @@ BOUNDARY_OPPOSE_Y = 2;
 /* The Simulator object provides an API for running the simulation using
  * the resources made available by the Grid data structure.
  * Parameters:
- *      N - the size of the grid (N by N practical grid).
- *      width - the width of the grid region.
- *      height - the height of the grid region.
- *      timeStep - the time step.
+ *      ui - a UI object that keeps track of the GUI and user interaction,
+ *           and also provides all of the sim parameters.
  */
-function Simulator(N, width, height, timeStep) {
-    this.timeStep = timeStep;
-    this.grid = new Grid([N, N, 1], [width, height, 0], 2);
+function Simulator(ui) {
+    this.ui = ui;
+    this.timeStep = this.ui.dT;
+    // TODO - change ui.___ to getter functions.
+    this.grid = new Grid([this.ui.grid_div, this.ui.grid_div, 1],
+                         [this.ui.width, this.ui.height, 0], 2);
 
     // velocity and denisty source arrays
     this.v_src = zeros4d(3, this.grid.N[X_DIM]+2, this.grid.N[Y_DIM]+2,
@@ -99,13 +100,13 @@ function Simulator(N, width, height, timeStep) {
 
     // Project step forces velocities to be mass-conserving.
     this.project = function(vel, buf) {
-        var Lx = 1.0 / width;//(this.grid.N[X_DIM] * this.grid.len_cells[X_DIM]);
-        var Ly = 1.0 / height;//(this.grid.N[Y_DIM] * this.grid.len_cells[Y_DIM]);
+        var Lx = 1.0 / this.ui.width;//(this.grid.N[X_DIM] * this.grid.len_cells[X_DIM]);
+        var Ly = 1.0 / this.ui.height;//(this.grid.N[Y_DIM] * this.grid.len_cells[Y_DIM]);
         // TODO - what? fix! 1.0 / width? or what?
         var p = buf[X_DIM];
         var div = buf[Y_DIM];
         
-        var h = -0.5 / Math.sqrt(width*height); // TODO what??
+        var h = -0.5 / Math.sqrt(this.ui.width*this.ui.height); // TODO what??
         for(var i=1; i<=this.grid.N[X_DIM]; i++) {
             for(var j=1; j<=this.grid.N[Y_DIM]; j++) {
                 //div[i][j][1] = -0.5*(Lx*(vel[X_DIM][i+1][j][1] - vel[X_DIM][i-1][j][1]) +
@@ -220,15 +221,15 @@ function Simulator(N, width, height, timeStep) {
     // Does one velocity field update.
     this.vStep = function() {
         for(var dim=0; dim<N_DIMS; dim++) {
-            if(keep_prev)
-                this.addSource(this.grid.vel[dim], this.grid.prev_vel[dim]);
+            //if(keep_prev)
+            this.addSource(this.grid.vel[dim], this.grid.prev_vel[dim]);
             this.addSource(this.grid.vel[dim], this.v_src[dim]);
         }
         this.grid.swapV();
 
         for(var dim=0; dim<N_DIMS; dim++)
             this.diffuse(this.grid.vel[dim], this.grid.prev_vel[dim],
-                         visc, dim+1); // TODO - boundary dim
+                         this.ui.visc, dim+1); // TODO - boundary dim
         this.project(this.grid.vel, this.grid.prev_vel);
         this.grid.swapV();
         for(var dim=0; dim<N_DIMS; dim++)
@@ -239,12 +240,12 @@ function Simulator(N, width, height, timeStep) {
 
     // Does one scalar field update.
     this.dStep = function() {
-        if(keep_prev)
-            this.addSource(this.grid.dens, this.grid.prev_dens);
+        //if(keep_prev)
+        this.addSource(this.grid.dens, this.grid.prev_dens);
         this.addSource(this.grid.dens, this.d_src);
         this.grid.swapD();
         this.diffuse(this.grid.dens, this.grid.prev_dens,
-                     diff, BOUNDARY_MIRROR);
+                     this.ui.diff, BOUNDARY_MIRROR);
         this.grid.swapD();
         this.advect(this.grid.dens, this.grid.prev_dens,
                     this.grid.vel, BOUNDARY_MIRROR);
@@ -253,11 +254,13 @@ function Simulator(N, width, height, timeStep) {
     
     // Take one step in the simulation.
     this.step = function(ctx) {
-        if(!keep_prev)
-            this.grid.clearPrev();
+        this.ui.query(this.grid.prev_vel, this.grid.prev_dens);
+        this.grid.clearCurrent();
+        //if(!keep_prev)
+        //    this.grid.clearPrev();
         this.vStep();
         this.dStep();
-        this.grid.render(ctx, show_grid, show_vels);
+        this.grid.render(ctx, ui.show_grid, ui.show_vels);
     }
 
     // Adds gravity to the simulation. Pass negative g-force value to
@@ -272,6 +275,8 @@ function Simulator(N, width, height, timeStep) {
 
     // When the user clicks, interface with the stuff.
     this.insertDensity = function(x, y, val) {
+        //var idx = this.grid.getContainerCell(x, y, 0);
+        //this.d_src[idx.i][idx.j][1] = val;
         this.grid.registerClick(x, y, val);
     }
 

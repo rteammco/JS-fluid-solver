@@ -39,6 +39,19 @@ function Grid(N, size, nDims) {
     this.dens = zeros3d(this.N[X_DIM]+2, this.N[Y_DIM]+2, this.N[Z_DIM]+2);
     this.prev_dens = zeros3d(this.N[X_DIM]+2, this.N[Y_DIM]+2, this.N[Z_DIM]+2);
 
+    // Clears out the current data arrays.
+    this.clearCurrent = function() {
+        for(var i=0; i<(this.N[X_DIM]+2); i++) {
+            for(var j=0; j<(this.N[X_DIM]+2); j++) {
+                for(var k=0; k<(this.N[X_DIM]+2); k++) {
+                    for(var dim=0; dim<3; dim++)
+                        this.vel[dim][i][j][k] = 0;
+                    this.dens[i][j][k] = 0;
+                }
+            }
+        }
+    }
+
     // Clears out the previous data arrays (non-conserving).
     this.clearPrev = function() {
         for(var i=0; i<(this.N[X_DIM]+2); i++) {
@@ -169,7 +182,7 @@ function Grid(N, size, nDims) {
                 ctx.beginPath();
                 var x = Math.floor(i * this.len_cells[X_DIM]);
                 ctx.moveTo(x, 0);
-                ctx.lineTo(x, canvas.height);
+                ctx.lineTo(x, ui.canvas.height); // TODO - no global var!
                 ctx.stroke();
             }
             // draw the y axis lines
@@ -177,7 +190,7 @@ function Grid(N, size, nDims) {
                 ctx.beginPath();
                 var y = Math.floor(i * this.len_cells[Y_DIM]);
                 ctx.moveTo(0, y);
-                ctx.lineTo(canvas.width, y);
+                ctx.lineTo(ui.canvas.width, y); // TODO - no global var!
                 ctx.stroke();
             }
         }
