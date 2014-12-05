@@ -6,7 +6,7 @@
 
 /* Grid Object Constants: */
 GRID_COLOR = "#555555";
-GRID_DENSITY_COLOR = "0, 0, 255";
+GRID_DENSITY_COLOR = "0, 153, 153"; // has to be in RGB!
 GRID_VELOCITY_COLOR = "yellow";
 GRID_TEXT_COLOR = "#00FF00";
 GRID_LINE_WIDTH = 1;
@@ -189,13 +189,17 @@ function Grid(N, size, nDims, ui) {
         ctx.save();
         // draw the densities
         var total_dens = 0;
+        var w = Math.floor(this.len_cells[X_DIM]);
+        var h = Math.floor(this.len_cells[Y_DIM]);
+        var start_x = (this.ui.width - w*(this.N[X_DIM]+2)) / 2;
+        var start_y = (this.ui.height - h*(this.N[Y_DIM]+2)) / 2;
         for(var i=0; i<this.N[X_DIM]+2; i++) {
             for(var j=0; j<this.N[Y_DIM]+2; j++) {
                 var dens = this.dens[i][j][1];
                 total_dens += dens;
                 if(dens > 0) {
-                    var x = Math.floor(i * this.len_cells[X_DIM]);
-                    var y = Math.floor(j * this.len_cells[Y_DIM]);
+                    var x = Math.floor(i * w + start_x);
+                    var y = Math.floor(j * h + start_y);
                     // TODO - changed for visualization
                     var real_dens = dens;
                     dens *= 1000;
@@ -204,7 +208,7 @@ function Grid(N, size, nDims, ui) {
                         dens = 1;
                     if(real_dens >= 1)
                         ctx.fillStyle = "#FF0000";
-                    ctx.fillRect(x, y, this.len_cells[X_DIM], this.len_cells[Y_DIM]);
+                    ctx.fillRect(x, y, w, h);
                 }
             }
         }
@@ -237,10 +241,8 @@ function Grid(N, size, nDims, ui) {
                 for(var j=0; j<this.N[Y_DIM]+2; j++) {
                     var x = Math.floor(i * this.len_cells[X_DIM]);
                     var y = Math.floor(j * this.len_cells[Y_DIM]);
-                    var vX = this.vel[X_DIM][i][j][1];
-                    var vY = this.vel[Y_DIM][i][j][1];
-                    vX *= 100;
-                    vY *= 100;
+                    var vX = Math.ceil(this.vel[X_DIM][i][j][1]*100);
+                    var vY = Math.ceil(this.vel[Y_DIM][i][j][1]*100);
                     ctx.beginPath();
                     ctx.moveTo(x, y);
                     ctx.lineTo(x+vX, y+vY);
@@ -253,7 +255,7 @@ function Grid(N, size, nDims, ui) {
             ctx.fillStyle = GRID_TEXT_COLOR;
             ctx.font = "16px Ariel";
             total_dens = Math.round(10000*total_dens)/10000;
-            ctx.fillText("Total System Density: " + total_dens, 10, 30);
+            ctx.fillText("Total System Density: " + total_dens, 20, 30);
         }
         ctx.restore();
     }
