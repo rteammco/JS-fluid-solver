@@ -7,6 +7,8 @@
 // GUI constants
 ACT_DENSITY_SRC = 0;
 ACT_VELOCITY_SRC = 1;
+MOUSE_LEFT = 0;
+MOUSE_RIGHT = 1;
 
 
 // UI Class: interfaces with the GUI.
@@ -18,6 +20,7 @@ function UI(canvas_id) {
 
     // mouse action variables
     this.mouse_dragging = false;
+    this.mouse_button = MOUSE_LEFT;
     
     // Getters:
     this.getContext = function() {
@@ -81,7 +84,11 @@ function UI(canvas_id) {
 
     // Set up listeners for mouse events.
     this.canvas.onmousedown = function(event) {
-        ui.mousedown(event);
+        ui.mousedown(event, MOUSE_LEFT);
+    }
+    this.canvas.oncontextmenu = function(event) {
+        event.preventDefault();
+        ui.mousedown(event, MOUSE_RIGHT);
     }
     document.onmouseup = function(event) {
         ui.mouseup(event);
@@ -98,8 +105,10 @@ function UI(canvas_id) {
         return {x:x, y:y};
     }
 
-    // When the user clicks down the mouse, dragging starts.
-    this.mousedown = function(event) {
+    // When the user clicks down the mouse, dragging starts. Left and right
+    // buttons map to different actions.
+    this.mousedown = function(event, button) {
+        this.mouse_button = button;
         this.mouse_dragging = true;
         this.mousemove(event);
     }
@@ -127,6 +136,13 @@ function UI(canvas_id) {
 
     // Returns the mouse action type that the GUI is currently set to.
     this.getActionType = function() {
-        return this.action_type;
+        if(   (this.action_type == ACT_DENSITY_SRC
+               && this.mouse_button == MOUSE_LEFT)
+           || (this.action_type == ACT_VELOCITY_SRC
+               && this.mouse_button == MOUSE_RIGHT)
+          )
+            return ACT_DENSITY_SRC;
+        else
+            return ACT_VELOCITY_SRC;
     }
 }
