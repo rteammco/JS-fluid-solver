@@ -181,7 +181,6 @@ function Simulator(ui) {
             this.addSource(this.grid.vel[dim], this.grid.src_vel[dim]);
         }
         this.grid.swapV();
-
         for(var dim=0; dim<N_DIMS; dim++)
             this.diffuse(this.grid.vel[dim], this.grid.prev_vel[dim],
                          this.ui.visc, dim+1); // TODO - boundary dim
