@@ -219,7 +219,6 @@ function Grid(N, size, nDims, ui) {
             // draw the x axis lines
             for(var i=0; i<this.N[X_DIM]+2+1; i++) {
                 ctx.beginPath();
-                //var x = Math.floor(i * this.len_cells[X_DIM]);
                 var x = Math.floor(i * w + start_x);
                 ctx.moveTo(x, start_y);
                 ctx.lineTo(x, this.ui.height - start_y);
@@ -228,7 +227,6 @@ function Grid(N, size, nDims, ui) {
             // draw the y axis lines
             for(var i=0; i<this.N[Y_DIM]+2+1; i++) {
                 ctx.beginPath();
-                //var y = Math.floor(i * this.len_cells[Y_DIM]);
                 var y = Math.floor(i * h + start_y);
                 ctx.moveTo(start_x, y);
                 ctx.lineTo(this.ui.width - start_x, y);
@@ -237,14 +235,15 @@ function Grid(N, size, nDims, ui) {
         }
         // if option is enabled, draw the velocity vectors
         if(this.ui.show_vels) {
+            // TODO - fix the renderring here to match the above fixes
             ctx.strokeStyle = GRID_VELOCITY_COLOR;
             ctx.lineWidth = GRID_LINE_WIDTH;
             for(var i=0; i<this.N[X_DIM]+2; i++) {
                 for(var j=0; j<this.N[Y_DIM]+2; j++) {
-                    var x = Math.floor(i * this.len_cells[X_DIM]);
-                    var y = Math.floor(j * this.len_cells[Y_DIM]);
-                    var vX = Math.ceil(this.vel[X_DIM][i][j][1]*100);
-                    var vY = Math.ceil(this.vel[Y_DIM][i][j][1]*100);
+                    var x = Math.floor(i * w + start_x);
+                    var y = Math.floor((j+1) * h + start_y);
+                    var vX = Math.ceil(this.vel[X_DIM][i][j][1]*1000);
+                    var vY = Math.ceil(this.vel[Y_DIM][i][j][1]*1000);
                     ctx.beginPath();
                     ctx.moveTo(x, y);
                     ctx.lineTo(x+vX, y+vY);
