@@ -21,6 +21,9 @@ function UI(canvas_id) {
     // mouse action variables
     this.mouse_dragging = false;
     this.mouse_button = MOUSE_LEFT;
+    this.source = {x:0, y:0};
+    this.prev_src = {x:0, y:0};
+    this.drag_frames = 0;
     
     // Getters:
     this.getContext = function() {
@@ -116,13 +119,20 @@ function UI(canvas_id) {
     // When the user lifts the mouse, dragging ends.
     this.mouseup = function(event) {
         this.mouse_dragging = false;
+        this.drag_frames = 0;
     }
 
     // When the mouse moves, apply the appropriate source.
     this.mousemove = function(event) {
         if(!this.mouse_dragging)
             return;
-        this.source = this.getPositionOnCanvas(event);
+        var source = this.getPositionOnCanvas(event);
+        if(this.drag_frames == 0)
+            this.prev_source = source;
+        else
+            this.prev_source = this.source;
+        this.source = source;
+        this.drag_frames++;
     }
 
     // If there is a source from user action, returns that x, y location.
@@ -144,5 +154,15 @@ function UI(canvas_id) {
             return ACT_DENSITY_SRC;
         else
             return ACT_VELOCITY_SRC;
+    }
+
+    // Returns the X-velocity of the user's current mouse movement.
+    this.getDragX = function() {
+        return this.source.x - this.prev_source.x;
+    }
+
+    // Returns the Y-velocity of the user's current mouse movement.
+    this.getDragY = function() {
+        return this.source.y - this.prev_source.y;
     }
 }

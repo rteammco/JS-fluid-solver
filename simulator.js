@@ -216,9 +216,8 @@ function Simulator(ui) {
             if(this.ui.getActionType() == ACT_DENSITY_SRC)
                 this.grid.addDensSource(src_point.x, src_point.y, 1);
             else {
-                // TODO - get velocity from UI
-                var vX = 500;
-                var vY = 0;
+                var vX = this.ui.getDragX();
+                var vY = this.ui.getDragY();
                 this.grid.addVelSource(src_point.x, src_point.y, vX, vY);
             }
         }
