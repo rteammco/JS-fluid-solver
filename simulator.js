@@ -68,7 +68,7 @@ function Simulator(ui) {
                     end_x = 0;
                 if(end_x > this.grid.N[X_DIM] * lX)
                     end_x = this.grid.N[X_DIM] * lX;
-                var i0 = Math.floor(end_x / lX);
+                var i0 = Math.floor(end_x / lX + 0.000001); // NOTE - rounding error
                 var i1 = i0 + 1;
                 // get resulting y coodinate cell after backtracking by vel
                 var start_y = j * lY;
@@ -77,7 +77,7 @@ function Simulator(ui) {
                     end_y = 0;
                 if(end_y > this.grid.N[Y_DIM] * lY)
                     end_y = this.grid.N[Y_DIM] * lY;
-                var j0 = Math.floor(end_y / lY);
+                var j0 = Math.floor(end_y / lY + 0.000001); // NOTE - rounding error
                 var j1 = j0 + 1;
                 // bilinear interopolation:
                 var s1 = (end_x - start_x)/lX;
